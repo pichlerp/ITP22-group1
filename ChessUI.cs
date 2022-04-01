@@ -19,6 +19,7 @@ namespace Chess_UI
         PictureBox boardbox;
         PictureBox[,] piece_imageboxes = new PictureBox[8, 8];
         // Bilder müssen in projectDirectory/Images gespeichert werden
+        // Name der Bilder muss erster Großbuchstabe der englischen Figurenname + 'w' oder 'b' (black/white) sein, außer König hat 'G' als Buchstabe
         string projectDirectory = Directory.GetParent(Environment.CurrentDirectory).Parent.FullName;
 
         public ChessUI(Form inputform, Action inputClickhandler)
