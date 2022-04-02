@@ -115,8 +115,9 @@ namespace Chess_UI
 
             if (pieceSelected)
             {
-                move(lastClick.Y, lastClick.X, currentClick.Y, currentClick.X);
                 pieceSelected = false;
+                if (lastClick == currentClick) return;
+                move(lastClick.Y, lastClick.X, currentClick.Y, currentClick.X);
             }
             else
             {
