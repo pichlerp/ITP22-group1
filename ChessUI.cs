@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Diagnostics;
 using System.Windows.Forms;
@@ -116,12 +116,14 @@ namespace Chess_UI
             if (pieceSelected)
             {
                 pieceSelected = false;
+                piece_imageboxes[lastClick.Y, lastClick.X].BackColor = Color.Transparent;
                 if (lastClick == currentClick) return;
                 move(lastClick.Y, lastClick.X, currentClick.Y, currentClick.X);
             }
             else
             {
                 pieceSelected = true;
+                box.BackColor = Color.LightGreen;
             }
         }
 
