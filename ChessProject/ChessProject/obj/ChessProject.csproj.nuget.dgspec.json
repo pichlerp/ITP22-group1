@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Peter\\source\\repos\\ChessProject\\ChessProject\\ChessProject.csproj": {}
+    "C:\\Users\\Peter\\source\\repos\\ITP22-group1-main\\ChessProject\\ChessProject\\ChessProject.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Peter\\source\\repos\\ChessProject\\ChessProject\\ChessProject.csproj": {
+    "C:\\Users\\Peter\\source\\repos\\ITP22-group1-main\\ChessProject\\ChessProject\\ChessProject.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Peter\\source\\repos\\ChessProject\\ChessProject\\ChessProject.csproj",
+        "projectUniqueName": "C:\\Users\\Peter\\source\\repos\\ITP22-group1-main\\ChessProject\\ChessProject\\ChessProject.csproj",
         "projectName": "ChessProject",
-        "projectPath": "C:\\Users\\Peter\\source\\repos\\ChessProject\\ChessProject\\ChessProject.csproj",
+        "projectPath": "C:\\Users\\Peter\\source\\repos\\ITP22-group1-main\\ChessProject\\ChessProject\\ChessProject.csproj",
         "packagesPath": "C:\\Users\\Peter\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Peter\\source\\repos\\ChessProject\\ChessProject\\obj\\",
+        "outputPath": "C:\\Users\\Peter\\source\\repos\\ITP22-group1-main\\ChessProject\\ChessProject\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Peter\\AppData\\Roaming\\NuGet\\NuGet.Config",
