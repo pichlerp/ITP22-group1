@@ -33,24 +33,55 @@ namespace Chess
 
             LoadMenu();
         }
-
+        Chess_UI.PieceColor playerColor;
         private void LoadMenu()
         {
-            Menu = new ChessMenu(this, MenuStartButtonPress);
+            Menu = new ChessMenu(this, MenuStartButtonPressW, MenuStartButtonPressB);
         }
-
-        private void MenuStartButtonPress(object sender, EventArgs e)
+        
+        private void MenuStartButtonPressW(object sender, EventArgs e)
         {
+            playerColor = Chess_UI.PieceColor.White;
             Menu.HideMenu();
             UI = new ChessUI(this, ClickHandler);
-            UI.PositionFromFEN(TheEngine.FromPositionCreateFEN());
+            UI.PositionFromFEN(TheEngine.FromPositionCreateFEN(), playerColor);
+        }
+
+        private void MenuStartButtonPressB(object sender, EventArgs e)
+        {
+            playerColor = Chess_UI.PieceColor.Black;
+            Menu.HideMenu();
+            UI = new ChessUI(this, ClickHandler);
+            UI.PositionFromFEN(TheEngine.FromPositionCreateFEN(), playerColor);
+        }
+
+        private void play_buttonW_Click(object sender, EventArgs e)
+        {
+            Console.WriteLine(sender);
+            Menu.HideMenu();
+            UI = new ChessUI(this, ClickHandler);
+            UI.PositionFromFEN(TheEngine.FromPositionCreateFEN(), playerColor);
         }
 
         int selectedY, selectedX;
         private void ClickHandler(int y, int x, bool piece_selected)
         {
             List<Move> moves = TheEngine.GenerateMoves();
-            // Übersetzung der Moves für die richtige Anzeige in der UI (Koordinatentransformation)
+            
+            // Je nach Spielerfarbe werden Koordinaten transformiert
+            if(playerColor == Chess_UI.PieceColor.White)
+            {
+                int temp = y;
+                y = x;
+                x = 7 - temp;
+            }
+            else
+            {
+                int temp = x;
+                x = y;
+                y = 7 - temp;
+            }
+
             if (piece_selected)
             {
                 if (TheEngine.IsValidMove(selectedX, selectedY, x, y))
@@ -68,10 +99,18 @@ namespace Chess
                 selectedX = x;
                 selectedY = y;
                 List<Point> possibleMoves = new List<Point>();
-                TheEngine.GetPossibleMoves(x, y, ref possibleMoves);
-                UI.ShowPossibleMoves(possibleMoves);
+                TheEngine.GetPossibleMoves(x, y, moves, ref possibleMoves);
+                // Koordinaten der erhaltenen Züge müssen an Koordinatensystem der Spielfarbe angepasst werden
+                if (playerColor == Chess_UI.PieceColor.White)
+                {
+                    UI.ShowPossibleMoves(UI.TransformMovesWhite(possibleMoves));
+                }
+                else
+                {
+                    UI.ShowPossibleMoves(UI.TransformMovesBlack(possibleMoves));
+                }
             }
-            UI.PositionFromFEN(TheEngine.FromPositionCreateFEN());
+            UI.PositionFromFEN(TheEngine.FromPositionCreateFEN(), playerColor);
             TheEngine.GetTheBoard();
         }
     }

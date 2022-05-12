@@ -39,9 +39,9 @@ namespace Chess_UI
             return false;
         }
 
-        internal List<Point> GetPossibleMoves(int rank, int file, ref List<Point> legalMoves)
+        internal List<Point> GetPossibleMoves(int rank, int file, List<Move> allMoves, ref List<Point> legalMoves)
         {
-            foreach (Move move in moves)
+            foreach (Move move in allMoves)
             {
                 if (move.StartSquare.X == rank && move.StartSquare.Y == file)
                 {

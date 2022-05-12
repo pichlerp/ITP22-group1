@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using System.IO;
 using System.Collections.Generic;
+using Chess_UI;
 
 namespace Chess
 {
@@ -52,11 +53,11 @@ namespace Chess
                 {
                     if ((i / 100 % 2 == 0 ^ k / 100 % 2 == 0))
                     {
-                        board.SetPixel(i, k, bright);
+                        board.SetPixel(i, k, dark);
                     }
                     else
                     {
-                        board.SetPixel(i, k, dark);
+                        board.SetPixel(i, k, bright);
                     }
                 }
             }
@@ -75,10 +76,36 @@ namespace Chess
                     form.Controls.Add(piece_imageboxes[i, k]);
                     piece_imageboxes[i, k].Parent = boardbox;
                     piece_imageboxes[i, k].BackColor = Color.Transparent;
-                   
+
                 }
             }
-            
+
+        }
+
+        internal List<Point> TransformMovesBlack(List<Point> moves)
+        {
+            List<Point> newMoves = new List<Point>();
+            for (int i = 0; i < moves.Count; i++)
+            {
+                int newX = 7 - moves[i].Y;
+                int newY = moves[i].X;
+
+                newMoves.Add(new Point(newX, newY));
+            }
+            return newMoves;
+        }
+
+        internal List<Point> TransformMovesWhite(List<Point> moves)
+        {
+            List<Point> newMoves = new List<Point>();
+            for (int i = 0; i < moves.Count; i++)
+            {
+                int newX = moves[i].Y;
+                int newY = 7 - moves[i].X;
+
+                newMoves.Add(new Point(newX, newY));
+            }
+            return newMoves;
         }
 
         public void ClearBoard()
@@ -92,7 +119,7 @@ namespace Chess
             }
         }
 
-        public void PositionFromFEN(string fen)
+        public void PositionFromFEN(string fen, PieceColor playerColor)
         {
             ClearBoard();
             int file = 0;
@@ -157,7 +184,22 @@ namespace Chess
                                 picturePath = "/Images/Gw.png";
                                 break;
                         }
-                        piece_imageboxes[file, rank].Image = Image.FromFile(projectDirectory + picturePath);
+                        int newrank;
+                        int newfile;
+                        if (playerColor == PieceColor.White)
+                        {
+                            // Darstellung für Weiß
+                            newrank = file;
+                            newfile = 7 - rank;
+                            piece_imageboxes[newfile, newrank].Image = Image.FromFile(projectDirectory + picturePath);
+                        }
+                        else
+                        {
+                            // Darstellung für Schwarz
+                            newrank = 7 - file;
+                            newfile = rank;
+                            piece_imageboxes[newfile, newrank].Image = Image.FromFile(projectDirectory + picturePath);
+                        }                        
                         file++;
                     }
                 }
