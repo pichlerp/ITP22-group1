@@ -28,36 +28,20 @@ namespace Chess_UI
         public int RowNum { get; set; }
 
         public int ColNum { get; set; }
-        public bool LegalMove { get; set; }
 
+        // Wenn ein Bauer noch nicht bewegt wurde, dann kann dieser um zwei Felder bewegt werden. Das leere Feld, das dabei übersprungen wird, ist jetzt ein gültiges Ziel für gegnerische Bauern, als ob der Bauer dort stünde.
         public bool EnPassantPossible { get; set; }
-
-        public bool Moved;
 
         public PieceColor Color;
 
         public PieceType Type;
-
-        public bool Selected;
 
         public Square(int row, int col)
         {
             RowNum = row;
             ColNum = col;
             EnPassantPossible = false;
-            Moved = false;
+            Color = PieceColor.Empty;
         }
-        /*
-        internal void RemovePiece()
-        {
-            this.Color = PieceColor.Empty;
-        }
-
-        internal void AddPiece(PieceColor color, PieceType type)
-        {
-            this.Color = color;
-            this.Type = type;
-        }
-        */
     }
 }

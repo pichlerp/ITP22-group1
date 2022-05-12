@@ -24,10 +24,12 @@ namespace Chess
         {
             buttonPress = handler;
             form = in_form;
-            menu_box = new PictureBox();
-            menu_box.Size = new Size(menu_box_width, menu_box_height);
-            menu_box.Location = new Point(menu_x, menu_y);
-            menu_box.BackColor = menu_backcolor;
+            menu_box = new PictureBox
+            {
+                Size = new Size(menu_box_width, menu_box_height),
+                Location = new Point(menu_x, menu_y),
+                BackColor = menu_backcolor
+            };
             form.Controls.Add(menu_box);
 
             main_menu_label = new Label();
@@ -51,7 +53,7 @@ namespace Chess
             play_button.FlatStyle = FlatStyle.Flat;
         }
 
-        public void hideMenu()
+        public void HideMenu()
         {
             form.Controls.Remove(menu_box);
         }

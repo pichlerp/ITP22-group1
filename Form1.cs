@@ -15,52 +15,53 @@ namespace Chess
         int form_height = 1000;
         Color backgroundcolor = Color.FromArgb(220, 155, 55);
         ChessUI UI;
-        ChessMenu Menu;
+        new ChessMenu Menu;
         Chess_UI.Engine TheEngine = new Chess_UI.Engine();
 
         public Form1()
         {
             InitializeComponent();
             // Programmablauf fängt hier an
-            initializeForm();
+            InitializeForm();
         }
 
-        private void initializeForm()
+        private void InitializeForm()
         {
             this.BackColor = backgroundcolor;
             this.StartPosition = FormStartPosition.CenterScreen;
             this.Size = new Size(form_width, form_height);
 
-            loadMenu();
+            LoadMenu();
         }
 
-        private void loadMenu()
+        private void LoadMenu()
         {
-            Menu = new ChessMenu(this, menuStartButtonPress);
+            Menu = new ChessMenu(this, MenuStartButtonPress);
         }
 
-        private void menuStartButtonPress(object sender, EventArgs e)
+        private void MenuStartButtonPress(object sender, EventArgs e)
         {
-            Menu.hideMenu();
-            UI = new ChessUI(this, clickHandler);
+            Menu.HideMenu();
+            UI = new ChessUI(this, ClickHandler);
+            UI.PositionFromFEN(TheEngine.FromPositionCreateFEN());
         }
 
         int selectedY, selectedX;
-        private void clickHandler(int y, int x, bool piece_selected)
+        private void ClickHandler(int y, int x, bool piece_selected)
         {
             List<Move> moves = TheEngine.GenerateMoves();
+            // Übersetzung der Moves für die richtige Anzeige in der UI (Koordinatentransformation)
             if (piece_selected)
             {
                 if (TheEngine.IsValidMove(selectedX, selectedY, x, y))
                 {
-                    UI.acceptMove = true;
                     TheEngine.MakeMove(selectedX, selectedY, x, y);
                 }
-                UI.hidePossibleMoves();
+                UI.HidePossibleMoves();
             }
             else
             {
-                if(!TheEngine.ValidColorSelected(x, y))
+                if (!TheEngine.ValidColorSelected(x, y))
                 {
                     return;
                 }
@@ -68,15 +69,9 @@ namespace Chess
                 selectedY = y;
                 List<Point> possibleMoves = new List<Point>();
                 TheEngine.GetPossibleMoves(x, y, ref possibleMoves);
-                // dummydaten
-                //possible_moves = new Point[5];
-                //for (int i = 0; i < 5; i++)
-                //{
-                //    possible_moves[i] = new Point(1, i + 2);
-                //}
-
-                UI.showPossibleMoves(possibleMoves);
+                UI.ShowPossibleMoves(possibleMoves);
             }
+            UI.PositionFromFEN(TheEngine.FromPositionCreateFEN());
             TheEngine.GetTheBoard();
         }
     }

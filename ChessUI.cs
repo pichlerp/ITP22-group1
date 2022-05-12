@@ -21,10 +21,10 @@ namespace Chess
         bool piece_selected;
         public bool acceptMove = false;
         Action<int, int, bool> clickHandler;
-        Form form;
+        public Form form;
         Bitmap board;
         PictureBox boardbox;
-        PictureBox[,] piece_imageboxes = new PictureBox[8, 8];
+        public PictureBox[,] piece_imageboxes = new PictureBox[8, 8];
         // Bilder müssen in projectDirectory/Images gespeichert werden
         // Name der Bilder muss erster Großbuchstabe der englischen Figurenname + 'w' oder 'b' (black/white) sein, außer König hat 'G' als Buchstabe
         string projectDirectory = Directory.GetParent(Environment.CurrentDirectory).Parent.FullName;
@@ -39,11 +39,12 @@ namespace Chess
             penultimateClick = new Point(0, 0);
             piece_selected = false;
             board = new Bitmap(width, height);
-            boardbox = new PictureBox();
-            boardbox.Location = new Point(100, 100);
-            boardbox.Size = new Size(width, height);
+            boardbox = new PictureBox
+            {
+                Location = new Point(100, 100),
+                Size = new Size(width, height)
+            };
             form.Controls.Add(boardbox);
-
             // Brett schwarz/weiß karriert machen
             for (int i = 0; i < width; i++)
             {
@@ -60,126 +61,108 @@ namespace Chess
                 }
             }
             boardbox.Image = board;
-
             // Pictureboxes der Figuren initialisieren
             for (int i = 0; i < 8; i++)
             {
                 for (int k = 0; k < 8; k++)
                 {
-                    piece_imageboxes[i, k] = new PictureBox();
-                    piece_imageboxes[i, k].Size = new Size(100, 100);
-                    piece_imageboxes[i, k].Location = new Point(k * 100, i * 100);
+                    piece_imageboxes[i, k] = new PictureBox
+                    {
+                        Size = new Size(100, 100),
+                        Location = new Point(k * 100, i * 100)
+                    };
                     piece_imageboxes[i, k].Click += ChessUI_Click;
                     form.Controls.Add(piece_imageboxes[i, k]);
                     piece_imageboxes[i, k].Parent = boardbox;
                     piece_imageboxes[i, k].BackColor = Color.Transparent;
+                   
                 }
             }
+            
+        }
 
-            void PositionFromFEN(string fen)
+        public void ClearBoard()
+        {
+            for (int i = 0; i < 8; i++)
             {
-                int file = 0;
-                int rank = 7;
-                string picturePath;
-                string piecePlacement = fen.Split(' ')[0];
-                int counter = 0;
-                foreach (char symbol in piecePlacement)
+                for (int j = 0; j < 8; j++)
                 {
-                    if (symbol == '/')
+                    piece_imageboxes[i, j].Image = null;
+                }
+            }
+        }
+
+        public void PositionFromFEN(string fen)
+        {
+            ClearBoard();
+            int file = 0;
+            int rank = 7;
+            string picturePath;
+            string piecePlacement = fen.Split(' ')[0];
+            int counter = 0;
+            foreach (char symbol in piecePlacement)
+            {
+                if (symbol == '/')
+                {
+                    file = 0;
+                    rank--;
+                }
+                else
+                {
+                    if (char.IsDigit(symbol))
                     {
-                        file = 0;
-                        rank--;
+                        file += (int)char.GetNumericValue(symbol);
                     }
                     else
                     {
-                        if (char.IsDigit(symbol))
+                        switch (fen[counter])
                         {
-                            file += (int)char.GetNumericValue(symbol);
+                            case 'k':
+                                picturePath = "/Images/Gb.png";
+                                break;
+                            case 'K':
+                                picturePath = "/Images/Gw.png";
+                                break;
+                            case 'q':
+                                picturePath = "/Images/Qb.png";
+                                break;
+                            case 'Q':
+                                picturePath = "/Images/Qw.png";
+                                break;
+                            case 'r':
+                                picturePath = "/Images/Rb.png";
+                                break;
+                            case 'R':
+                                picturePath = "/Images/Rw.png";
+                                break;
+                            case 'n':
+                                picturePath = "/Images/Kb.png";
+                                break;
+                            case 'N':
+                                picturePath = "/Images/Kw.png";
+                                break;
+                            case 'b':
+                                picturePath = "/Images/Bb.png";
+                                break;
+                            case 'B':
+                                picturePath = "/Images/Bw.png";
+                                break;
+                            case 'p':
+                                picturePath = "/Images/Pb.png";
+                                break;
+                            case 'P':
+                                picturePath = "/Images/Pw.png";
+                                break;
+                            default:
+                                picturePath = "/Images/Gw.png";
+                                break;
                         }
-                        else
-                        {
-                            switch (fen[counter])
-                            {
-                                case 'k':
-                                    picturePath = "/Images/Gb.png";
-                                    break;
-                                case 'K':
-                                    picturePath = "/Images/Gw.png";
-                                    break;
-                                case 'q':
-                                    picturePath = "/Images/Qb.png";
-                                    break;
-                                case 'Q':
-                                    picturePath = "/Images/Qw.png";
-                                    break;
-                                case 'r':
-                                    picturePath = "/Images/Rb.png";
-                                    break;
-                                case 'R':
-                                    picturePath = "/Images/Rw.png";
-                                    break;
-                                case 'n':
-                                    picturePath = "/Images/Kb.png";
-                                    break;
-                                case 'N':
-                                    picturePath = "/Images/Kw.png";
-                                    break;
-                                case 'b':
-                                    picturePath = "/Images/Bb.png";
-                                    break;
-                                case 'B':
-                                    picturePath = "/Images/Bw.png";
-                                    break;
-                                case 'p':
-                                    picturePath = "/Images/Pb.png";
-                                    break;
-                                case 'P':
-                                    picturePath = "/Images/Pw.png";
-                                    break;
-                                default:
-                                    picturePath = "/Images/Gw.png";
-                                    break;
-                            }
-                            piece_imageboxes[file, rank].Image = Image.FromFile(projectDirectory + picturePath);
-                            file++;
-                        }
+                        piece_imageboxes[file, rank].Image = Image.FromFile(projectDirectory + picturePath);
+                        file++;
                     }
-                    counter++;
                 }
+                counter++;
             }
-
-            PositionFromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
-
-            /*
-            // Bilder in Figurenpictureboxes einfügen
-            piece_imageboxes[0, 4].Image = Image.FromFile(projectDirectory + "/Images/Gb.png");
-            piece_imageboxes[7, 4].Image = Image.FromFile(projectDirectory + "/Images/Gw.png");
-
-            piece_imageboxes[0, 3].Image = Image.FromFile(projectDirectory + "/Images/Qb.png");
-            piece_imageboxes[7, 3].Image = Image.FromFile(projectDirectory + "/Images/QW.png");
-
-            piece_imageboxes[0, 0].Image = Image.FromFile(projectDirectory + "/Images/Rb.png");
-            piece_imageboxes[0, 7].Image = Image.FromFile(projectDirectory + "/Images/Rb.png");
-            piece_imageboxes[7, 0].Image = Image.FromFile(projectDirectory + "/Images/Rw.png");
-            piece_imageboxes[7, 7].Image = Image.FromFile(projectDirectory + "/Images/Rw.png");
-
-            piece_imageboxes[0, 1].Image = Image.FromFile(projectDirectory + "/Images/Kb.png");
-            piece_imageboxes[0, 6].Image = Image.FromFile(projectDirectory + "/Images/Kb.png");
-            piece_imageboxes[7, 1].Image = Image.FromFile(projectDirectory + "/Images/Kw.png");
-            piece_imageboxes[7, 6].Image = Image.FromFile(projectDirectory + "/Images/Kw.png");
-
-            piece_imageboxes[0, 2].Image = Image.FromFile(projectDirectory + "/Images/Bb.png");
-            piece_imageboxes[0, 5].Image = Image.FromFile(projectDirectory + "/Images/Bb.png");
-            piece_imageboxes[7, 2].Image = Image.FromFile(projectDirectory + "/Images/Bw.png");
-            piece_imageboxes[7, 5].Image = Image.FromFile(projectDirectory + "/Images/Bw.png");
-
-            // Bilder in bauernpictureboxes einfügen
-            for (int i = 0; i < 8; i++)
-            {
-                piece_imageboxes[1, i].Image = Image.FromFile(projectDirectory + "/Images/Pb.png");
-                piece_imageboxes[6, i].Image = Image.FromFile(projectDirectory + "/Images/Pw.png");
-            }
-            */
         }
 
         public void ChessUI_Click(object sender, EventArgs e)
@@ -189,7 +172,7 @@ namespace Chess
             int pY = box.Location.Y / box.Size.Height;
             int pX = box.Location.X / box.Size.Width;
             Console.WriteLine("Y: " + pY + "  X: " + pX);
-            Debug.Assert(UIdebug.checkCoords(pY, pX));
+            Debug.Assert(UIdebug.CheckCoords(pY, pX));
 
             // Funktion wird abgebrochen wenn Leeres Feld angedrückt wird, ohne eine ausgewählte Figur, oder wenn selbes Feld 2 mal gedrückt wird
             if (box.Image == null && piece_selected == false || (pX == currentClick.X && pY == currentClick.Y)) return;
@@ -212,14 +195,10 @@ namespace Chess
             if (piece_selected)
             {
                 piece_selected = false;
-                if (acceptMove)
-                {
-                    move(lastClick.Y, lastClick.X, currentClick.Y, currentClick.X);
-                }
                 piece_imageboxes[currentClick.Y, currentClick.X].BackColor = Color.LightGreen;
                 piece_imageboxes[lastClick.Y, lastClick.X].BackColor = Color.LightGreen;
 
-                hidePossibleMoves();
+                HidePossibleMoves();
             }
             else
             {
@@ -228,17 +207,7 @@ namespace Chess
             }
         }
 
-        public void move(int y_from, int x_from, int y_to, int x_to)
-        {
-            Debug.Assert(UIdebug.checkCoords(y_from, x_from, y_to, x_to));
-
-            // Zug wird ausgeführt durch Tauschen der Bilder
-            piece_imageboxes[y_to, x_to].Image = piece_imageboxes[y_from, x_from].Image;
-            piece_imageboxes[y_from, x_from].Image = null;
-            acceptMove = false;
-        }
-
-        public Point[] getLastTwoPointsClicked()
+        public Point[] GetLastTwoPointsClicked()
         {
             Point[] points = new Point[2];
             points[0] = currentClick;
@@ -246,7 +215,7 @@ namespace Chess
             return points;
         }
 
-        public void showPossibleMoves(System.Collections.Generic.List<System.Drawing.Point> moves)
+        public void ShowPossibleMoves(System.Collections.Generic.List<System.Drawing.Point> moves)
         {
             // Hintergrundfarben fürs Highlight ändern
             foreach (Point move in moves)
@@ -262,7 +231,7 @@ namespace Chess
             }
         }
 
-        public void hidePossibleMoves()
+        public void HidePossibleMoves()
         {
             foreach (PictureBox box in piece_imageboxes)
             {
