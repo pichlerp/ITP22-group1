@@ -15,10 +15,10 @@ namespace Chess
         Point lastClick;
         Point currentClick;
         Point penultimateClick;
-        static Color dark = Color.DarkSlateGray;
-        static Color bright = Color.FromArgb(255, 240, 100);
-        Color dark_highlight = Color.FromArgb(Math.Min((int)((double)dark.R * 2), 255), Math.Min((int)((double)dark.G * 2), 255), Math.Min((int)((double)dark.B * 2), 255));
-        Color bright_highlight = Color.FromArgb(Math.Min((int)((double)bright.R * 2), 255), Math.Min((int)((double)bright.G * 2), 255), Math.Min((int)((double)bright.B * 2), 255));
+        static Color dark = Color.FromArgb(128, 63, 130);
+        static Color bright = Color.FromArgb(63, 130, 128);
+        Color dark_highlight = Color.FromArgb(Math.Min((int)((double)dark.R * 1.34), 255), Math.Min((int)((double)dark.G * 1.34), 255), Math.Min((int)((double)dark.B * 1.34), 255));
+        Color bright_highlight = Color.FromArgb(Math.Min((int)((double)bright.R * 1.34), 255), Math.Min((int)((double)bright.G * 1.34), 255), Math.Min((int)((double)bright.B * 1.34), 255));
         bool piece_selected;
         public bool acceptMove = false;
         Action<int, int, bool> clickHandler;
@@ -199,7 +199,7 @@ namespace Chess
                             newrank = 7 - file;
                             newfile = rank;
                             piece_imageboxes[newfile, newrank].Image = Image.FromFile(projectDirectory + picturePath);
-                        }                        
+                        }
                         file++;
                     }
                 }
@@ -237,15 +237,14 @@ namespace Chess
             if (piece_selected)
             {
                 piece_selected = false;
-                piece_imageboxes[currentClick.Y, currentClick.X].BackColor = Color.LightGreen;
-                piece_imageboxes[lastClick.Y, lastClick.X].BackColor = Color.LightGreen;
-
+                //piece_imageboxes[currentClick.Y, currentClick.X].BackColor = Color.FromArgb(255, 209, 102);
+                //piece_imageboxes[lastClick.Y, lastClick.X].BackColor = Color.FromArgb(255, 209, 102);
                 HidePossibleMoves();
             }
             else
             {
                 piece_selected = true;
-                box.BackColor = Color.Green;
+                box.BackColor = Color.FromArgb(230, 230, 100);
             }
         }
 

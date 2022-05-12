@@ -53,11 +53,11 @@
     <Compile Include="ChessMenu.cs" />
     <Compile Include="ChessUI.cs" />
     <Compile Include="Engine.cs" />
-    <Compile Include="Form1.cs">
+    <Compile Include="GameWindow.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="GameWindow.Designer.cs">
+      <DependentUpon>GameWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
