@@ -42,7 +42,7 @@ namespace Chess
             board = new Bitmap(width, height);
             boardbox = new PictureBox
             {
-                Location = new Point(0, 0),
+                Location = new Point(100, 100),
                 Size = new Size(width, height)
             };
             form.Controls.Add(boardbox);
@@ -236,7 +236,6 @@ namespace Chess
                 lastClick = currentClick;
                 currentClick = new Point(pX, pY);
             }
-
             if (piece_selected)
             {
                 piece_selected = false;

@@ -21,15 +21,6 @@ namespace Chess_UI
 
         public Board(string FEN)
         {
-            /*
-            Squares = new Square[8, 8];
-            for (int i = 0; i < 8; i++)
-            {
-                for (int j = 0; j < 8; j++)
-                {
-                    Squares[i, j] = new Square(i, j);
-                }
-            }*/
             PositionFromFEN(FEN);
         }
         // Forsyth–Edwards-Notation: String beschreibt Spielsituation komplett

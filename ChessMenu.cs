@@ -30,7 +30,7 @@ namespace Chess
             menu_box = new PictureBox
             {
                 Size = new Size(menu_box_width, menu_box_height),
-                Location = new Point(menu_x, menu_y),
+                Location = new Point(menu_x, menu_y),            
                 BackColor = menu_backcolor
             };
             form.Controls.Add(menu_box);

@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Diagnostics;
 using System.Windows.Forms;
 using static Chess_UI.Engine;
+using Chess_UI;
 
 namespace Chess
 {
@@ -16,13 +17,15 @@ namespace Chess
         Color backgroundcolor = Color.FromArgb(10, 10, 10); //Color.FromArgb(126, 128, 128);
         ChessUI UI;
         new ChessMenu Menu;
-        Chess_UI.Engine TheEngine = new Chess_UI.Engine();
+        static Chess_UI.Engine TheEngine = new Chess_UI.Engine();
+        Perft perft = new Perft(ref TheEngine); // performance test, move path enumeration
 
         public GameWindow()
         {
             InitializeComponent();
             // Programmablauf fängt hier an
             InitializeForm();
+            perft.countMovesToDepth(10);
         }
 
         private void InitializeForm()
@@ -38,7 +41,6 @@ namespace Chess
         {
             Menu = new ChessMenu(this, MenuStartButtonPressW, MenuStartButtonPressB);
         }
-
         private void MenuStartButtonPressW(object sender, EventArgs e)
         {
             playerColor = Chess_UI.PieceColor.White;
@@ -129,7 +131,6 @@ namespace Chess
                     UI.ShowPossibleMoves(UI.TransformMovesBlack(possibleMoves));
                 }
             }
-
             // Die Engine serialisiert die Position und daraus wird das GUI gebildet
             UI.PositionFromFEN(TheEngine.FromPositionCreateFEN(), playerColor);
             // Zusätzlich wird das Brett in der Konsole ausgegeben.
