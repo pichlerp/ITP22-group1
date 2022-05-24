@@ -42,7 +42,7 @@ namespace Chess
             board = new Bitmap(width, height);
             boardbox = new PictureBox
             {
-                Location = new Point(100, 100),
+                Location = new Point(0, 0),
                 Size = new Size(width, height)
             };
             form.Controls.Add(boardbox);
@@ -230,9 +230,12 @@ namespace Chess
             clickHandler(pY, pX, piece_selected);
 
             // Neuen Klick speichern
-            penultimateClick = lastClick;
-            lastClick = currentClick;
-            currentClick = new Point(pX, pY);
+            if (!piece_selected)
+            {
+                penultimateClick = lastClick;
+                lastClick = currentClick;
+                currentClick = new Point(pX, pY);
+            }
 
             if (piece_selected)
             {
@@ -278,6 +281,10 @@ namespace Chess
             {
                 box.BackColor = Color.Transparent;
             }
+        }
+        public void HideMenu()
+        {
+            form.Controls.Remove(boardbox);
         }
     }
 }
