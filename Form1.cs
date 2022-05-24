@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Diagnostics;
 using System.Windows.Forms;
+using static Chess_UI.Engine;
 
 namespace Chess
 {
@@ -14,60 +15,103 @@ namespace Chess
         int form_height = 1000;
         Color backgroundcolor = Color.FromArgb(220, 155, 55);
         ChessUI UI;
-        ChessMenu Menu;
+        new ChessMenu Menu;
+        Chess_UI.Engine TheEngine = new Chess_UI.Engine();
 
         public Form1()
         {
             InitializeComponent();
             // Programmablauf fängt hier an
-            initializeForm();
+            InitializeForm();
         }
 
-        private void initializeForm()
+        private void InitializeForm()
         {
             this.BackColor = backgroundcolor;
             this.StartPosition = FormStartPosition.CenterScreen;
             this.Size = new Size(form_width, form_height);
 
-            loadMenu();
+            LoadMenu();
+        }
+        Chess_UI.PieceColor playerColor;
+        private void LoadMenu()
+        {
+            Menu = new ChessMenu(this, MenuStartButtonPressW, MenuStartButtonPressB);
+        }
+        
+        private void MenuStartButtonPressW(object sender, EventArgs e)
+        {
+            playerColor = Chess_UI.PieceColor.White;
+            Menu.HideMenu();
+            UI = new ChessUI(this, ClickHandler);
+            UI.PositionFromFEN(TheEngine.FromPositionCreateFEN(), playerColor);
         }
 
-        private void loadMenu()
+        private void MenuStartButtonPressB(object sender, EventArgs e)
         {
-            Menu = new ChessMenu(this, menuStartButtonPress);
+            playerColor = Chess_UI.PieceColor.Black;
+            Menu.HideMenu();
+            UI = new ChessUI(this, ClickHandler);
+            UI.PositionFromFEN(TheEngine.FromPositionCreateFEN(), playerColor);
         }
 
-        private void menuStartButtonPress(object sender, EventArgs e)
+        private void play_buttonW_Click(object sender, EventArgs e)
         {
-            Menu.hideMenu();
-            UI = new ChessUI(this, clickHandler);
+            Console.WriteLine(sender);
+            Menu.HideMenu();
+            UI = new ChessUI(this, ClickHandler);
+            UI.PositionFromFEN(TheEngine.FromPositionCreateFEN(), playerColor);
         }
 
-        private void clickHandler(int y, int x, bool piece_selected)
+        int selectedY, selectedX;
+        private void ClickHandler(int y, int x, bool piece_selected)
         {
-            if (piece_selected)
+            List<Move> moves = TheEngine.GenerateMoves();
+            
+            // Je nach Spielerfarbe werden Koordinaten transformiert
+            if(playerColor == Chess_UI.PieceColor.White)
             {
-                /*
-                if (Engine.isValidMove(y, x)){
-                    Engine.makeMove(y, x);
-                }
-                */
-
-                UI.hidePossibleMoves();
+                int temp = y;
+                y = x;
+                x = 7 - temp;
             }
             else
             {
-                Point[] possible_moves; // = Engine.getPossibleMoves(y, x);
-
-                // dummydaten
-                possible_moves = new Point[5];
-                for (int i = 0; i < 5; i++)
-                {
-                    possible_moves[i] = new Point(1, i + 2);
-                }
-
-                UI.showPossibleMoves(possible_moves);
+                int temp = x;
+                x = y;
+                y = 7 - temp;
             }
+
+            if (piece_selected)
+            {
+                if (TheEngine.IsValidMove(selectedX, selectedY, x, y))
+                {
+                    TheEngine.MakeMove(selectedX, selectedY, x, y);
+                }
+                UI.HidePossibleMoves();
+            }
+            else
+            {
+                if (!TheEngine.ValidColorSelected(x, y))
+                {
+                    return;
+                }
+                selectedX = x;
+                selectedY = y;
+                List<Point> possibleMoves = new List<Point>();
+                TheEngine.GetPossibleMoves(x, y, moves, ref possibleMoves);
+                // Koordinaten der erhaltenen Züge müssen an Koordinatensystem der Spielfarbe angepasst werden
+                if (playerColor == Chess_UI.PieceColor.White)
+                {
+                    UI.ShowPossibleMoves(UI.TransformMovesWhite(possibleMoves));
+                }
+                else
+                {
+                    UI.ShowPossibleMoves(UI.TransformMovesBlack(possibleMoves));
+                }
+            }
+            UI.PositionFromFEN(TheEngine.FromPositionCreateFEN(), playerColor);
+            TheEngine.GetTheBoard();
         }
     }
 }

@@ -13,47 +13,68 @@ namespace Chess
         static int menu_box_width = 700;
         int menu_x = 500 - menu_box_width / 2;
         int menu_y = 500 - menu_box_height / 2;
-        Color menu_backcolor = Color.FromArgb(132, 86, 18);
+        Color menu_backcolor = Color.FromArgb(48, 52, 51);
         PictureBox menu_box;
-        EventHandler buttonPress;
+        EventHandler buttonPressW;
+        EventHandler buttonPressB;
         Form form;
-        Button play_button; // platzhalterbutton, bis mehr funktinalität da ist
+        Button play_buttonW;
+        Button play_buttonB;
         Label main_menu_label;
 
-        public ChessMenu(Form in_form, EventHandler handler)
+        public ChessMenu(Form in_form, EventHandler playW, EventHandler playB)
         {
-            buttonPress = handler;
+            buttonPressW = playW;
+            buttonPressB = playB;
             form = in_form;
-            menu_box = new PictureBox();
-            menu_box.Size = new Size(menu_box_width, menu_box_height);
-            menu_box.Location = new Point(menu_x, menu_y);
-            menu_box.BackColor = menu_backcolor;
+            menu_box = new PictureBox
+            {
+                Size = new Size(menu_box_width, menu_box_height),
+                Location = new Point(menu_x, menu_y),            
+                BackColor = menu_backcolor
+            };
             form.Controls.Add(menu_box);
 
             main_menu_label = new Label();
             form.Controls.Add(main_menu_label);
             main_menu_label.Parent = menu_box;
             main_menu_label.Text = "Chess";
-            main_menu_label.Font = new Font("Broadway", 30, FontStyle.Bold);
-            main_menu_label.Size = new Size(200, 50);
+            main_menu_label.Font = new Font("Ink Free", 64, FontStyle.Italic);
+            main_menu_label.Size = new Size(400, 100);
+            main_menu_label.ForeColor = Color.FromArgb(223, 223, 223);
             main_menu_label.AutoSize = false;
             main_menu_label.TextAlign = ContentAlignment.MiddleCenter;
             main_menu_label.Location = new Point(menu_box_width / 2 - main_menu_label.Size.Width / 2, 30);
 
-            play_button = new Button();
-            form.Controls.Add(play_button);
-            play_button.Click += buttonPress;
-            play_button.Size = new Size(300, 50);
-            play_button.Parent = menu_box;
-            play_button.Location = new Point(menu_box_width / 2 - play_button.Width / 2, 150);
-            play_button.Text = "Press to start Game";
-            play_button.Font = new Font("Ariel", 16, FontStyle.Bold);
-            play_button.FlatStyle = FlatStyle.Flat;
-        }
+            play_buttonW = new Button();
+            form.Controls.Add(play_buttonW);
+            play_buttonW.Click += buttonPressW;
+            play_buttonW.Size = new Size(350, 50);
+            play_buttonW.Parent = menu_box;
+            play_buttonW.Location = new Point(menu_box_width / 2 - play_buttonW.Width / 2, 200);
+            play_buttonW.Text = "Neues Spiel gegen Schwarz";
+            play_buttonW.Font = new Font("Candara Bold", 16, FontStyle.Regular);
+            play_buttonW.ForeColor = Color.FromArgb(223, 223, 223);
+            play_buttonW.FlatStyle = FlatStyle.Flat;
 
-        public void hideMenu()
+            play_buttonB = new Button();
+            form.Controls.Add(play_buttonB);
+            play_buttonB.Click += buttonPressB;
+            play_buttonB.Size = new Size(350, 50);
+            play_buttonB.Parent = menu_box;
+            play_buttonB.Location = new Point(menu_box_width / 2 - play_buttonB.Width / 2, 300);
+            play_buttonB.Text = "Neues Spiel gegen Weiß";
+            play_buttonB.Font = new Font("Candara Bold", 16, FontStyle.Regular);
+            play_buttonB.ForeColor = Color.FromArgb(223, 223, 223);
+            play_buttonB.FlatStyle = FlatStyle.Flat;
+        }
+        public void HideMenu()
         {
             form.Controls.Remove(menu_box);
+        }
+        public void ShowMenu()
+        {
+            form.Controls.Add(menu_box);
         }
     }
 }
