@@ -230,10 +230,12 @@ namespace Chess
             clickHandler(pY, pX, piece_selected);
 
             // Neuen Klick speichern
-            penultimateClick = lastClick;
-            lastClick = currentClick;
-            currentClick = new Point(pX, pY);
-
+            if (!piece_selected)
+            {
+                penultimateClick = lastClick;
+                lastClick = currentClick;
+                currentClick = new Point(pX, pY);
+            }
             if (piece_selected)
             {
                 piece_selected = false;
@@ -278,6 +280,10 @@ namespace Chess
             {
                 box.BackColor = Color.Transparent;
             }
+        }
+        public void HideMenu()
+        {
+            form.Controls.Remove(boardbox);
         }
     }
 }

@@ -14,6 +14,12 @@ namespace Chess_UI
         // Startposition
         static readonly string FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
+        // Test für Schachmatt
+        //static readonly string FEN = "r2q4/8/8/8/8/8/8/4K3 w - - 0 1";
+
+        // Test für Patt
+        //static readonly string FEN = "1k6/3R4/8/5Q2/8/2R5/8/4K3 w - - 0 1"; 
+      
         // Tests für Rochade
         //static readonly string FEN = "r2qk2r/8/8/8/8/8/8/R2QK2R w KQkq - 0 1"; // alle vier Möglichkeiten
         //static readonly string FEN = "r3k2r/8/8/8/8/8/8/R3K2R w - - 0 1"; // selbe Position, aber Rochaden nicht mehr erlaubt
@@ -31,10 +37,9 @@ namespace Chess_UI
         {
             TheBoard = new Board(fen);
         }
-
         internal bool IsValidMove(int startX, int startY, int endX, int endY)
         {
-            foreach (Move move in moves)
+            foreach (Move move in movesBothColors)
             {
                 if (move.StartSquare.X == startX && move.StartSquare.Y == startY && move.EndSquare.X == endX && move.EndSquare.Y == endY)
                 {
@@ -67,6 +72,11 @@ namespace Chess_UI
             return false;
         }
 
+        internal PieceColor GetTurnColor()
+        {
+            return TheBoard.turnColor;
+        }
+      
         internal void GetTheBoard()
         {
             PrintBoard(TheBoard);
@@ -154,6 +164,7 @@ namespace Chess_UI
                 fen += "q";
             }
             if (!(TheBoard.whiteCastlingLongPossible || TheBoard.whiteCastlingShortPossible || TheBoard.blackCastlingLongPossible || TheBoard.blackCastlingShortPossible))
+
             {
                 fen += "-";
             }
@@ -167,6 +178,41 @@ namespace Chess_UI
         public void MakeMove(Move move)
         {
             MakeMove(move.StartSquare.X, move.StartSquare.Y, move.EndSquare.X, move.EndSquare.Y);
+}
+        internal bool LegalMovesExist(List<Move> moves)
+        {
+            if(moves.Count == 0)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        internal bool KingInCheck(PieceColor opponentColor, List<Move> moves)
+        {
+            int kingX, kingY;
+            kingX = kingY = -1;
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    if(TheBoard.Squares[i, j].Color == opponentColor && TheBoard.Squares[i, j].Type == PieceType.King)
+                    {
+                        kingX = i;
+                        kingY = j;
+                    }
+                }
+            }
+
+            foreach (Move move in moves)
+            {
+                if(move.EndSquare.X == kingX && move.EndSquare.Y == kingY)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         internal void MakeMove(int startX, int startY, int endX, int endY)
@@ -188,33 +234,6 @@ namespace Chess_UI
                 {
                     TheBoard.Squares[i, j].EnPassantPossible = false;
                 }
-            }
-
-            if (startX == 0 && startY == 4)
-            {
-                TheBoard.whiteCastlingLongPossible = false;
-                TheBoard.whiteCastlingShortPossible = false;
-            }
-            else if (startX == 7 && startY == 4)
-            {
-                TheBoard.blackCastlingLongPossible = false;
-                TheBoard.blackCastlingShortPossible = false;
-            }
-            else if (startX == 0 && startY == 0)
-            {
-                TheBoard.whiteCastlingLongPossible = false;
-            }
-            else if (startX == 0 && startY == 7)
-            {
-                TheBoard.whiteCastlingShortPossible = false;
-            }
-            else if (startX == 7 && startY == 0)
-            {
-                TheBoard.blackCastlingLongPossible = false;
-            }
-            else if (startX == 7 && startY == 7)
-            {
-                TheBoard.blackCastlingShortPossible = false;
             }
 
             bool special = false;
@@ -262,34 +281,62 @@ namespace Chess_UI
             if (TheBoard.Squares[startX, startY].Type == PieceType.King)
             {
                 // Lange Rochade weiß
-                if (endX == 0 && endY == 2)
+                if (endX == 0 && endY == 2 && TheBoard.whiteCastlingLongPossible)
                 {
                     TheBoard.Squares[0, 3].Type = PieceType.Rook;
                     TheBoard.Squares[0, 3].Color = PieceColor.White;
                     TheBoard.Squares[0, 0].Color = PieceColor.Empty;
                 }
                 // Kurze Rochade weiß
-                else if (endX == 0 && endY == 6)
+                else if (endX == 0 && endY == 6 && TheBoard.whiteCastlingShortPossible)
                 {
                     TheBoard.Squares[0, 5].Type = PieceType.Rook;
                     TheBoard.Squares[0, 5].Color = PieceColor.White;
                     TheBoard.Squares[0, 7].Color = PieceColor.Empty;
                 }
                 // Lange Rochade schwarz
-                else if (endX == 7 && endY == 2)
+                else if (endX == 7 && endY == 2 && TheBoard.blackCastlingLongPossible)
                 {
                     TheBoard.Squares[7, 3].Type = PieceType.Rook;
                     TheBoard.Squares[7, 3].Color = PieceColor.Black;
                     TheBoard.Squares[7, 0].Color = PieceColor.Empty;
                 }
                 // Kurze Rochade schwarz
-                else if (endX == 7 && endY == 6)
+                else if (endX == 7 && endY == 6 && TheBoard.blackCastlingShortPossible)
                 {
                     TheBoard.Squares[7, 5].Type = PieceType.Rook;
                     TheBoard.Squares[7, 5].Color = PieceColor.Black;
                     TheBoard.Squares[7, 7].Color = PieceColor.Empty;
                 }
             }
+
+            if (startX == 0 && startY == 4)
+            {
+                TheBoard.whiteCastlingLongPossible = false;
+                TheBoard.whiteCastlingShortPossible = false;
+            }
+            else if (startX == 7 && startY == 4)
+            {
+                TheBoard.blackCastlingLongPossible = false;
+                TheBoard.blackCastlingShortPossible = false;
+            }
+            else if (startX == 0 && startY == 0)
+            {
+                TheBoard.whiteCastlingLongPossible = false;
+            }
+            else if (startX == 0 && startY == 7)
+            {
+                TheBoard.whiteCastlingShortPossible = false;
+            }
+            else if (startX == 7 && startY == 0)
+            {
+                TheBoard.blackCastlingLongPossible = false;
+            }
+            else if (startX == 7 && startY == 7)
+            {
+                TheBoard.blackCastlingShortPossible = false;
+            }
+
             PieceColor color = TheBoard.Squares[startX, startY].Color;
             PieceType type = TheBoard.Squares[startX, startY].Type;
             TheBoard.Squares[endX, endY].Color = color;
@@ -417,13 +464,24 @@ namespace Chess_UI
             }
             Console.WriteLine("");
         }
-
-        
+       
 
         public List<Move> moves;
         public List<Move> GenerateMoves()
         {
             moves = new List<Move>();
+
+
+        public List<Move> movesBothColors;
+        public List<Move> movesPlayerColor;
+        public List<Move> movesAfter;
+        public List<Move> GenerateMoves(PieceColor color)
+        {
+            string SaveState = FromPositionCreateFEN();
+            Console.WriteLine(SaveState);
+            movesBothColors = new List<Move>();
+            movesAfter = new List<Move>();
+            movesPlayerColor = new List<Move>();
             for (int file = 0; file < 8; file++)
             {
                 for (int rank = 0; rank < 8; rank++)
@@ -431,14 +489,77 @@ namespace Chess_UI
                     if (TheBoard.Squares[file, rank].Color != PieceColor.Empty)
                     {
                         Point start = new Point(file, rank);
-                        GeneratePieceMove(start, TheBoard.Squares[file, rank].Color, TheBoard.Squares[file, rank].Type);
+                        GeneratePieceMove(start, TheBoard.Squares[file, rank].Color, TheBoard.Squares[file, rank].Type, movesBothColors);
                     }
                 }
             }
-            return moves;
+
+            foreach(Move move in movesBothColors.ToList())
+            {
+                movesAfter.Clear();
+                bool cont = false;
+                
+                MakeMove(move.StartSquare.X, move.StartSquare.Y, move.EndSquare.X, move.EndSquare.Y);
+                for (int file = 0; file < 8; file++)
+                {
+                    for (int rank = 0; rank < 8; rank++)
+                    {
+                        if (TheBoard.Squares[file, rank].Color != PieceColor.Empty)
+                        {
+                            Point start = new Point(file, rank);
+                            GeneratePieceMove(start, TheBoard.Squares[file, rank].Color, TheBoard.Squares[file, rank].Type, movesAfter);
+                        }
+                    }
+                }
+
+                foreach(Move moveAfter in movesAfter)
+                {
+                    if (TheBoard.Squares[moveAfter.EndSquare.X, moveAfter.EndSquare.Y].Type == PieceType.King && TheBoard.Squares[moveAfter.EndSquare.X, moveAfter.EndSquare.Y].Color != PieceColor.Empty)
+                    {
+                        if(TheBoard.Squares[moveAfter.StartSquare.X, moveAfter.StartSquare.Y].Color != TheBoard.Squares[moveAfter.EndSquare.X, moveAfter.EndSquare.Y].Color)
+                        {
+                            if(TheBoard.Squares[moveAfter.StartSquare.X, moveAfter.StartSquare.Y].Color == TheBoard.turnColor)
+                            {
+                                movesBothColors.Remove(move);
+                                cont = true;
+                                break;
+                            }
+                        }
+                        
+                    }
+                }
+
+                TheBoard.PositionFromFEN(SaveState);
+                if(cont)
+                {
+                    continue;
+                }                
+
+                // && move.StartSquare.X != move.EndSquare.X && move.StartSquare.Y != move.EndSquare.Y
+                if (TheBoard.Squares[move.StartSquare.X, move.StartSquare.Y].Color == color)
+                {
+                    Console.WriteLine(move.StartSquare.X + "   " + move.StartSquare.Y + "   " + move.EndSquare.X + "   " +  move.EndSquare.Y);
+                    movesPlayerColor.Add(move);
+                }
+            }
+            /*
+            if(!movesCurrentColor.Any())
+            {
+                if(TheBoard.turnColor == PieceColor.White)
+                {
+                    Console.WriteLine("Schachmatt 0 - 1");
+                }
+                else
+                {
+                    Console.WriteLine("Schachmatt 1 - 0");
+                }
+
+            }
+            */
+            return movesPlayerColor;
         }
 
-        private void GeneratePieceMove(Point start, PieceColor color, PieceType type)
+        private void GeneratePieceMove(Point start, PieceColor color, PieceType type, List<Move> moves)
         {
             // Liste von allen möglichen Zügen, die teilweise out of bounds sind -> diese werden nicht in die Liste der gültigen Züge übernommen
             List<Move> potentialMoves = new List<Move>();
@@ -515,8 +636,8 @@ namespace Chess_UI
             }
             if (type == PieceType.Queen)
             {
-                GeneratePieceMove(start, color, PieceType.Rook);
-                GeneratePieceMove(start, color, PieceType.Bishop);
+                GeneratePieceMove(start, color, PieceType.Rook, moves);
+                GeneratePieceMove(start, color, PieceType.Bishop, moves);
             }
             if (type == PieceType.Pawn)
             {

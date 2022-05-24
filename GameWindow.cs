@@ -41,7 +41,6 @@ namespace Chess
         {
             Menu = new ChessMenu(this, MenuStartButtonPressW, MenuStartButtonPressB);
         }
-        
         private void MenuStartButtonPressW(object sender, EventArgs e)
         {
             playerColor = Chess_UI.PieceColor.White;
@@ -67,12 +66,23 @@ namespace Chess
         }
 
         int selectedY, selectedX;
+        bool gameOver = false;
         private void ClickHandler(int y, int x, bool piece_selected)
         {
-            List<Move> moves = TheEngine.GenerateMoves();
-            
+            // Wenn das Spiel vorbei ist, sollen Clicks verworfen werden.
+            if (gameOver)
+            {
+                return;
+            }
+
+            // Farbe des aktuellen Halbzugs wird aktualisiert.
+            Chess_UI.PieceColor turnColor = TheEngine.GetTurnColor();
+
+            // Eine Liste von allen legalen Zügen der Figuren der aktuellen Farbe wird erstellt.
+            List<Move> moves = TheEngine.GenerateMoves(turnColor);
+
             // Je nach Spielerfarbe werden Koordinaten transformiert
-            if(playerColor == Chess_UI.PieceColor.White)
+            if (playerColor == Chess_UI.PieceColor.White)
             {
                 int temp = y;
                 y = x;
@@ -85,25 +95,33 @@ namespace Chess
                 y = 7 - temp;
             }
 
+            // Falls vor dem Click bereits eine Figur ausgewählt war ...
             if (piece_selected)
             {
+                // ... wird ermittelt, ob diese Figur mit dem aktuellen Click einen Zug machen kann.
                 if (TheEngine.IsValidMove(selectedX, selectedY, x, y))
                 {
                     TheEngine.MakeMove(selectedX, selectedY, x, y);
                 }
                 UI.HidePossibleMoves();
             }
+            // Falls noch keine Figur ausgewählt worden war ...
             else
-            {
+            {   // Clicks auf Felder, die keine Figur der gültigen Farbe enthalten, werden verworfen.
                 if (!TheEngine.ValidColorSelected(x, y))
                 {
                     return;
                 }
+                // Jetzt wissen wir, dass eine Figur korrekt angeclickt wurde, und die Koordinaten der ausgewählten Figur werden zugewiesen.
                 selectedX = x;
                 selectedY = y;
+
+                // Eine Liste an Punkten wird erstellt, die alle Felder enthält, wohin die gewählte Figur ziehen kann.
                 List<Point> possibleMoves = new List<Point>();
                 TheEngine.GetPossibleMoves(x, y, moves, ref possibleMoves);
-                // Koordinaten der erhaltenen Züge müssen an Koordinatensystem der Spielfarbe angepasst werden
+
+                // Diese Felder werden markiert.
+                // Dabei müssen die Koordinaten der erhaltenen Züge an das Koordinatensystem der Spielfarbe angepasst werden
                 if (playerColor == Chess_UI.PieceColor.White)
                 {
                     UI.ShowPossibleMoves(UI.TransformMovesWhite(possibleMoves));
@@ -113,8 +131,67 @@ namespace Chess
                     UI.ShowPossibleMoves(UI.TransformMovesBlack(possibleMoves));
                 }
             }
+            // Die Engine serialisiert die Position und daraus wird das GUI gebildet
             UI.PositionFromFEN(TheEngine.FromPositionCreateFEN(), playerColor);
+            // Zusätzlich wird das Brett in der Konsole ausgegeben.
             TheEngine.GetTheBoard();
+
+            // Die Farbe des Gegners in diesem Halbzug wird bestimmt.
+            Chess_UI.PieceColor opponentColor;
+            if (turnColor == Chess_UI.PieceColor.White)
+            {
+                opponentColor = Chess_UI.PieceColor.Black;
+            }
+            else
+            {
+                opponentColor = Chess_UI.PieceColor.White;
+            }
+
+            // Falls der Gegner keinen legalen Zug hat, endet das Spiel.
+            if (!TheEngine.LegalMovesExist(TheEngine.GenerateMoves(opponentColor)))
+            {
+                gameOver = true;
+                // Gegner ist im Schach und hat keinen legalen Zug -> Schachmatt
+                if (TheEngine.KingInCheck(opponentColor, TheEngine.GenerateMoves(turnColor)))
+                {
+                    if (turnColor != Chess_UI.PieceColor.White)
+                    {
+                        ShowDialog("Weiß ist Schachmatt", "Ergebnis: 0 - 1");
+
+                    }
+                    else
+                    {
+                        ShowDialog("Schwarz ist Schachmatt", "Ergebnis: 1 - 0");
+                    }
+                }
+                // Gegner ist nicht im Schach und hat keinen legalen Zug -> Patt
+                else
+                {
+                    ShowDialog("Remis durch Patt", "Ergebnis: 1/2 - 1/2");
+                }
+
+            }
+
+        }
+        public static void ShowDialog(string text, string caption)
+        {
+            Form prompt = new Form()
+            {
+                Width = 500,
+                Height = 150,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                Text = caption,
+                StartPosition = FormStartPosition.CenterScreen
+            };
+            Label textLabel = new Label() { Left = 20, Top = 20, Text = text };
+            textLabel.Width = 150;
+            textLabel.Height = 100;
+            Button confirmation = new Button() { Text = "Ok", Left = 350, Width = 100, Top = 70, DialogResult = DialogResult.OK };
+            confirmation.Click += (sender, e) => { prompt.Close(); };
+            prompt.Controls.Add(confirmation);
+            prompt.Controls.Add(textLabel);
+            prompt.AcceptButton = confirmation;
+            prompt.ShowDialog();
         }
     }
 }

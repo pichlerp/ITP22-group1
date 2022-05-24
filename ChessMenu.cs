@@ -18,7 +18,7 @@ namespace Chess
         EventHandler buttonPressW;
         EventHandler buttonPressB;
         Form form;
-        Button play_buttonW; 
+        Button play_buttonW;
         Button play_buttonB;
         Label main_menu_label;
 
@@ -30,8 +30,8 @@ namespace Chess
             menu_box = new PictureBox
             {
                 Size = new Size(menu_box_width, menu_box_height),
-                Location = new Point(menu_x, menu_y),
-                BackColor = menu_backcolor                
+                Location = new Point(menu_x, menu_y),            
+                BackColor = menu_backcolor
             };
             form.Controls.Add(menu_box);
 
@@ -68,10 +68,13 @@ namespace Chess
             play_buttonB.ForeColor = Color.FromArgb(223, 223, 223);
             play_buttonB.FlatStyle = FlatStyle.Flat;
         }
-
         public void HideMenu()
         {
             form.Controls.Remove(menu_box);
+        }
+        public void ShowMenu()
+        {
+            form.Controls.Add(menu_box);
         }
     }
 }

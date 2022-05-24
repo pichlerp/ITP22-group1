@@ -21,6 +21,12 @@ namespace Chess_UI
 
         public Board(string FEN)
         {
+            PositionFromFEN(FEN);
+        }
+        // Forsyth–Edwards-Notation: String beschreibt Spielsituation komplett
+        // Beispiel Startposition: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+        public void PositionFromFEN(string fen)
+        {
             Squares = new Square[8, 8];
             for (int i = 0; i < 8; i++)
             {
@@ -29,12 +35,6 @@ namespace Chess_UI
                     Squares[i, j] = new Square(i, j);
                 }
             }
-            PositionFromFEN(FEN);
-        }
-        // Forsyth–Edwards-Notation: String beschreibt Spielsituation komplett
-        // Beispiel Startposition: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
-        public void PositionFromFEN(string fen)
-        {
             // 1. Substring: Position der Figuren
             var typeFromSymbol = new Dictionary<char, PieceType>()
             {
