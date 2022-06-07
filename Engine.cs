@@ -10,10 +10,21 @@ namespace Chess_UI
     class Engine
     {
         bool locked = false;
+        public List<Move> movesPlayerColor;
         // Spielaufbau - online Editor mit FEN https://lichess.org/editor
 
         // Startposition
-        static readonly string FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        // static readonly string FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+        // PERFT siehe https://www.chessprogramming.org/Perft_Results
+        // PERFT 3: 97898 statt 97862 (Stockfish) -> Bauer bedroht Feld, durch das König bei Rochade zieht
+        // static readonly string FEN = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
+
+        static readonly string FEN = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/P1N2Q2/1PPBBPpP/R3K2R w KQkq - 0 1";
+
+        // static readonly string FEN = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1";
+        // static readonly string FEN = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
+        // static readonly string FEN = "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10";
 
         // PERFT
         // static readonly string FEN = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
@@ -27,15 +38,20 @@ namespace Chess_UI
         // static readonly string FEN = "1k6/3R4/8/5Q2/8/2R5/8/4K3 w - - 0 1"; 
 
         // Tests für Rochade
+        // PERFT 4: 1288070 statt 1288065 (Stockfish)
         // static readonly string FEN = "r2qk2r/8/8/8/8/8/8/R2QK2R w KQkq - 0 1"; // alle vier Möglichkeiten
+      
         // static readonly string FEN = "r3k2r/8/8/8/8/8/8/R3K2R w - - 0 1"; // selbe Position, aber Rochaden nicht mehr erlaubt
         // static readonly string FEN = "4k2r/6r1/8/8/8/8/3R4/R3K3 w Qk - 0 1"; // weiß lange Rochade, schwarz kurze Rochade
 
         // Tests für Beförderung
         // static readonly string FEN = "8/8/8/4p1K1/3k1P2/8/8/8 b - - 0 1";
 
+        // static readonly string FEN = "8/6KP/8/8/8/8/pk6/8 w - - 0 1";
+
         // Tests für En Passant
-        // static readonly string FEN = "rnbqkbnr/ppppp1pp/8/2P5/5p2/8/PP1PPPPP/RNBQKBNR w KQkq - 0 1";
+        // static readonly string FEN = "rnbqkbnr/ppppp1pp/8/2P5/5p2/8/PP1PPPPP/RNBQKBNR w KQkq - 0 1"; // kein En Passant in diesem Zug möglich, aber viele Varianten, die zu En Passant führen
+        // static readonly string FEN = "rnbqkbnr/ppppp1pp/8/2P5/5pP1/8/PP1PPP1P/RNBQKBNR b KQkq g3 0 1"; // selbe Position, aber FEN gibt jetzt g3 als legales Ziel für En Passant an -> Bauer auf f4 hat direkt Möglichkeit für En Passant
 
         static Board TheBoard = new Board(FEN);
 
@@ -95,7 +111,7 @@ namespace Chess_UI
         {
             return TheBoard.turnColor;
         }
-      
+
         internal void GetTheBoard()
         {
             PrintBoard(TheBoard);
@@ -103,8 +119,8 @@ namespace Chess_UI
 
         internal string FromPositionCreateFEN()
         {
+            // 1. Substring: Position der Figuren 
             string fen = "";
-
             for (int i = 7; i >= 0; i--)
             {
                 for (int j = 0; j < 8; j++)
@@ -155,6 +171,7 @@ namespace Chess_UI
                     }
                 }
             }
+            // 2. Substring: Farbe, die am Zug ist
             if (TheBoard.turnColor == PieceColor.White)
             {
                 fen += " w";
@@ -163,44 +180,60 @@ namespace Chess_UI
             {
                 fen += " b";
             }
-
+            // 3. Substring: Übrige Möglichkeiten der Rochade
             fen += " ";
-
             if (TheBoard.whiteCastlingLongPossible)
-            {
-                fen += "K";
-            }
-            if (TheBoard.whiteCastlingShortPossible)
             {
                 fen += "Q";
             }
-            if (TheBoard.blackCastlingLongPossible)
+            if (TheBoard.whiteCastlingShortPossible)
             {
-                fen += "k";
+                fen += "K";
             }
-            if (TheBoard.blackCastlingShortPossible)
+            if (TheBoard.blackCastlingLongPossible)
             {
                 fen += "q";
             }
+            if (TheBoard.blackCastlingShortPossible)
+            {
+                fen += "k";
+            }
             if (!(TheBoard.whiteCastlingLongPossible || TheBoard.whiteCastlingShortPossible || TheBoard.blackCastlingLongPossible || TheBoard.blackCastlingShortPossible))
-
             {
                 fen += "-";
             }
-            fen += " -";
-
+            // 4. Substring: En passant Position in algebraischer Notation
+            fen += " ";
+            if (TheBoard.enPassantPosition.X == -1 && TheBoard.enPassantPosition.Y == -1)
+            {
+                fen += "-";
+            }
+            else
+            {
+                char rank = (char)(TheBoard.enPassantPosition.X + 97);
+                char file = (char)(TheBoard.enPassantPosition.Y + 49);
+                fen += rank.ToString() + file.ToString();
+            }
+            // 5. Substring: Anzahl an Zügen seit Schlagen oder Bauernzug
             fen += (" " + TheBoard.halfmoveClock.ToString());
+            // 6. Substring: Nummer des aktuellen Zugs
             fen += (" " + TheBoard.turnCounter.ToString());
+            //Console.WriteLine("Position converted to " + fen);
             return fen;
+        }
+
+        internal void IncrementTurncounter()
+        {
+            TheBoard.turnCounter++;
         }
 
         public void MakeMove(Move move)
         {
-            MakeMove(move.StartSquare.X, move.StartSquare.Y, move.EndSquare.X, move.EndSquare.Y);
+            MakeMove(move.StartSquare.X, move.StartSquare.Y, move.EndSquare.X, move.EndSquare.Y, move.MoveType);
         }
         internal bool LegalMovesExist(List<Move> moves)
         {
-            if(moves.Count == 0)
+            if (moves.Count == 0)
             {
                 return false;
             }
@@ -215,7 +248,7 @@ namespace Chess_UI
             {
                 for (int j = 0; j < 8; j++)
                 {
-                    if(TheBoard.Squares[i, j].Color == opponentColor && TheBoard.Squares[i, j].Type == PieceType.King)
+                    if (TheBoard.Squares[i, j].Color == opponentColor && TheBoard.Squares[i, j].Type == PieceType.King)
                     {
                         kingX = i;
                         kingY = j;
@@ -225,7 +258,7 @@ namespace Chess_UI
 
             foreach (Move move in moves)
             {
-                if(move.EndSquare.X == kingX && move.EndSquare.Y == kingY)
+                if (move.EndSquare.X == kingX && move.EndSquare.Y == kingY)
                 {
                     return true;
                 }
@@ -234,9 +267,12 @@ namespace Chess_UI
             return false;
         }
 
-        internal void MakeMove(int startX, int startY, int endX, int endY)
+        internal void MakeMove(int startX, int startY, int endX, int endY, MoveType Type)
         {
-            if (TheBoard.Squares[endX, endY].EnPassantPossible && TheBoard.Squares[startX, startY].Type == PieceType.Pawn)
+            bool promotion = false;
+
+            // En passant: Bauer schlägt Bauer hinter sich TheBoard.Squares[endX, endY].EnPassantPossible 
+            if (TheBoard.enPassantPosition.X == endY && TheBoard.enPassantPosition.Y == endX && TheBoard.Squares[startX, startY].Type == PieceType.Pawn)
             {
                 if (TheBoard.Squares[startX, startY].Color == PieceColor.White)
                 {
@@ -247,54 +283,82 @@ namespace Chess_UI
                     TheBoard.Squares[endX + 1, endY].Color = PieceColor.Empty;
                 }
             }
-            for (int i = 0; i < 8; i++)
-            {
-                for (int j = 0; j < 8; j++)
-                {
-                    TheBoard.Squares[i, j].EnPassantPossible = false;
-                }
-            }
+            TheBoard.enPassantPosition.Y = -1;
+            TheBoard.enPassantPosition.X = -1;
 
-            bool special = false;
             // En passant wird eventuell möglich - Flag wird gesetzt
             if (TheBoard.Squares[startX, startY].Type == PieceType.Pawn && (startX - endX) * (startX - endX) == 4)
             {
                 if (TheBoard.Squares[startX, startY].Color == PieceColor.White)
                 {
-                    TheBoard.Squares[startX + 1, startY].EnPassantPossible = true;
+                    TheBoard.enPassantPosition.Y = startX + 1;
+                    TheBoard.enPassantPosition.X = startY;
                 }
                 else
                 {
-                    TheBoard.Squares[startX - 1, startY].EnPassantPossible = true;
+                    TheBoard.enPassantPosition.Y = startX - 1;
+                    TheBoard.enPassantPosition.X = startY;
                 }
             }
+            else
+            {
+                TheBoard.enPassantPosition.X = TheBoard.enPassantPosition.Y = -1;
+            }
+
             // Beförderung von Bauern
             if (TheBoard.Squares[startX, startY].Type == PieceType.Pawn && (endX == 0 || endX == 7))
             {
-                special = true;
-                Console.WriteLine("Bauer wird befördert. Figur auswählen (q, r, b, n): ");
-                string input = Console.ReadLine();
-                while (!(input[0] == 'q' || input[0] == 'r' || input[0] == 'b' || input[0] == 'n'))
+                promotion = true;
+                string input;
+                // Wenn kein spezieller MoveType angegeben wurde, dann handelt es sich um einen manuellen Zug und dementsprechend wird nachgefragt
+                if (Type == MoveType.Default)
                 {
-                    Console.WriteLine("Eingabe ungültig. Figur auswählen (q, r, b, n): ");
+                    Console.WriteLine("Bauer wird befördert. Figur auswählen (q, r, b, n): ");
                     input = Console.ReadLine();
+                    while (input == "" || !(input[0] == 'q' || input[0] == 'r' || input[0] == 'b' || input[0] == 'n'))
+                    {
+                        Console.WriteLine("Eingabe ungültig. Figur auswählen (q, r, b, n): ");
+                        input = Console.ReadLine();
+                    }
+                    if (input[0] == 'q')
+                    {
+                        TheBoard.Squares[endX, endY].Type = PieceType.Queen;
+                    }
+                    else if (input[0] == 'r')
+                    {
+                        TheBoard.Squares[endX, endY].Type = PieceType.Rook;
+                    }
+                    else if (input[0] == 'b')
+                    {
+                        TheBoard.Squares[endX, endY].Type = PieceType.Bishop;
+                    }
+                    else
+                    {
+                        TheBoard.Squares[endX, endY].Type = PieceType.Knight;
+                    }
                 }
-                if (input[0] == 'q')
-                {
-                    TheBoard.Squares[endX, endY].Type = PieceType.Queen;
-                }
-                else if (input[0] == 'r')
-                {
-                    TheBoard.Squares[endX, endY].Type = PieceType.Rook;
-                }
-                else if (input[0] == 'b')
-                {
-                    TheBoard.Squares[endX, endY].Type = PieceType.Bishop;
-                }
+                // Es wurde ein spezieller MoveType angegeben, der hier übersetzt wird
                 else
                 {
-                    TheBoard.Squares[endX, endY].Type = PieceType.Knight;
+                    PieceType PromotionType = PieceType.Queen;
+                    switch (Type)
+                    {
+                        case MoveType.PromotionQueen:
+                            PromotionType = PieceType.Queen;
+                            break;
+                        case MoveType.PromotionRook:
+                            PromotionType = PieceType.Rook;
+                            break;
+                        case MoveType.PromotionBishop:
+                            PromotionType = PieceType.Bishop;
+                            break;
+                        case MoveType.PromotionKnight:
+                            PromotionType = PieceType.Knight;
+                            break;
+                    }
+                    TheBoard.Squares[endX, endY].Type = PromotionType;
                 }
+
             }
             // Rochade
             if (TheBoard.Squares[startX, startY].Type == PieceType.King)
@@ -328,42 +392,49 @@ namespace Chess_UI
                     TheBoard.Squares[7, 7].Color = PieceColor.Empty;
                 }
             }
-
+            // Weißer König wird bewegt -> Weiß verliert beide Rochaden
             if (startX == 0 && startY == 4)
             {
                 TheBoard.whiteCastlingLongPossible = false;
                 TheBoard.whiteCastlingShortPossible = false;
             }
+            // Schwarzer König wird bewegt -> Schwarz verliert beide Rochaden
             else if (startX == 7 && startY == 4)
             {
                 TheBoard.blackCastlingLongPossible = false;
                 TheBoard.blackCastlingShortPossible = false;
             }
+            // Weißer Turm (queenside) wird bewegt -> Weiß verliert lange R.
             else if (startX == 0 && startY == 0)
             {
                 TheBoard.whiteCastlingLongPossible = false;
             }
+            // Weißer Turm (kingside) wird bewegt -> Weiß verliert kurze R.
             else if (startX == 0 && startY == 7)
             {
                 TheBoard.whiteCastlingShortPossible = false;
             }
+            // Schwarzer Turm (queenside) wird bewegt -> Schwarz verliert lange R.
             else if (startX == 7 && startY == 0)
             {
                 TheBoard.blackCastlingLongPossible = false;
             }
+            // Schwarzer Turm (kingside) wird bewegt -> Schwarz verliert kurze R.
             else if (startX == 7 && startY == 7)
             {
                 TheBoard.blackCastlingShortPossible = false;
             }
-
+            // Farbe und Typ wird von Startfeld übernommen (bei Beförderung wurde Typ schon angepasst)
             PieceColor color = TheBoard.Squares[startX, startY].Color;
             PieceType type = TheBoard.Squares[startX, startY].Type;
             TheBoard.Squares[endX, endY].Color = color;
-            if (!special)
+            if (!promotion)
             {
                 TheBoard.Squares[endX, endY].Type = type;
             }
+            // Ursprüngliches Feld wird leer
             TheBoard.Squares[startX, startY].Color = PieceColor.Empty;
+            // Der Zug endet und gegnerischer Zug beginnt
             if (TheBoard.turnColor == PieceColor.White)
             {
                 TheBoard.turnColor = PieceColor.Black;
@@ -374,6 +445,7 @@ namespace Chess_UI
             }
         }
 
+        // Ausgabe der Spielsituation an der Konsole
         public static void PrintBoard(Board B)
         {
             Console.WriteLine("");
@@ -484,23 +556,19 @@ namespace Chess_UI
             Console.WriteLine("");
         }
       
-        /*
-        public List<Move> GenerateMoves()
-        {
-            moves = new List<Move>();
-        */
         public List<Move> movesBothColors;
-        public List<Move> movesPlayerColor;
         public List<Move> movesAfter;
+
         public List<Move> GenerateMoves()
         {
             PieceColor color = GetTurnColor();
 
             string SaveState = FromPositionCreateFEN();
-            //Console.WriteLine(SaveState);
+          
             movesBothColors = new List<Move>();
             movesAfter = new List<Move>();
             movesPlayerColor = new List<Move>();
+
             for (int file = 0; file < 8; file++)
             {
                 for (int rank = 0; rank < 8; rank++)
@@ -513,12 +581,97 @@ namespace Chess_UI
                 }
             }
 
-            foreach(Move move in movesBothColors.ToList())
+            foreach (Move move in movesBothColors.ToList())
+            {
+                int startx, starty, endx, endy;
+                startx = move.StartSquare.X;
+                starty = move.StartSquare.Y;
+                endx = move.EndSquare.X;
+                endy = move.EndSquare.Y;
+                if (TheBoard.Squares[startx, starty].Type == PieceType.King)
+                {
+                    if (TheBoard.Squares[startx, starty].Color == PieceColor.White)
+                    {
+                        if (startx == 0 && starty == 4)
+                        {
+                            if (endx == 0 && (endy == 2 || endy == 6))
+                            {
+                                if (KingInCheck(PieceColor.White, movesBothColors))
+                                {
+                                    movesBothColors.Remove(move);
+                                    continue;
+                                }
+                                int endyCastling;
+                                if (endy == 2)
+                                {
+                                    endyCastling = 3;
+                                }
+                                else
+                                {
+                                    endyCastling = 5;
+                                }
+
+                                foreach (Move move1 in movesBothColors)
+                                {
+                                    if (endyCastling == move1.EndSquare.Y && 0 == move1.EndSquare.X)
+                                    {
+                                        if (TheBoard.Squares[startx, starty].Color != TheBoard.Squares[move1.StartSquare.X, move1.StartSquare.Y].Color)
+                                        {
+                                            movesBothColors.Remove(move);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else if (TheBoard.Squares[startx, starty].Color == PieceColor.Black)
+                    {
+                        if (startx == 7 && starty == 4)
+                        {
+                            if (endx == 7 && (endy == 2 || endy == 6))
+                            {
+                                if (KingInCheck(PieceColor.Black, movesBothColors))
+                                {
+                                    movesBothColors.Remove(move);
+                                    continue;
+                                }
+
+                                int endychastling;
+                                if (endy == 2)
+                                {
+                                    endychastling = 3;
+                                }
+                                else
+                                {
+                                    endychastling = 5;
+                                }
+
+                                foreach (Move move1 in movesBothColors)
+                                {
+                                    if (endychastling == move1.EndSquare.Y && 7 == move1.EndSquare.X)
+                                    {
+                                        if (TheBoard.Squares[startx, starty].Color != TheBoard.Squares[move1.StartSquare.X, move1.StartSquare.Y].Color)
+                                        {
+                                            movesBothColors.Remove(move);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
+
+            foreach (Move move in movesBothColors.ToList())
             {
                 movesAfter.Clear();
                 bool cont = false;
-                
-                MakeMove(move.StartSquare.X, move.StartSquare.Y, move.EndSquare.X, move.EndSquare.Y);
+
+                MakeMove(move);
+
                 for (int file = 0; file < 8; file++)
                 {
                     for (int rank = 0; rank < 8; rank++)
@@ -531,50 +684,35 @@ namespace Chess_UI
                     }
                 }
 
-                foreach(Move moveAfter in movesAfter)
+                foreach (Move moveAfter in movesAfter)
                 {
                     if (TheBoard.Squares[moveAfter.EndSquare.X, moveAfter.EndSquare.Y].Type == PieceType.King && TheBoard.Squares[moveAfter.EndSquare.X, moveAfter.EndSquare.Y].Color != PieceColor.Empty)
                     {
-                        if(TheBoard.Squares[moveAfter.StartSquare.X, moveAfter.StartSquare.Y].Color != TheBoard.Squares[moveAfter.EndSquare.X, moveAfter.EndSquare.Y].Color)
+                        if (TheBoard.Squares[moveAfter.StartSquare.X, moveAfter.StartSquare.Y].Color != TheBoard.Squares[moveAfter.EndSquare.X, moveAfter.EndSquare.Y].Color)
                         {
-                            if(TheBoard.Squares[moveAfter.StartSquare.X, moveAfter.StartSquare.Y].Color == TheBoard.turnColor)
+                            if (TheBoard.Squares[moveAfter.StartSquare.X, moveAfter.StartSquare.Y].Color == TheBoard.turnColor)
                             {
                                 movesBothColors.Remove(move);
                                 cont = true;
                                 break;
                             }
                         }
-                        
+
                     }
                 }
 
                 TheBoard.PositionFromFEN(SaveState);
-                if(cont)
+                if (cont)
                 {
                     continue;
-                }                
+                }
 
-                // && move.StartSquare.X != move.EndSquare.X && move.StartSquare.Y != move.EndSquare.Y
                 if (TheBoard.Squares[move.StartSquare.X, move.StartSquare.Y].Color == color)
                 {
-                    //Console.WriteLine(move.StartSquare.X + "   " + move.StartSquare.Y + "   " + move.EndSquare.X + "   " +  move.EndSquare.Y);
                     movesPlayerColor.Add(move);
                 }
             }
-            /*
-            if(!movesCurrentColor.Any())
-            {
-                if(TheBoard.turnColor == PieceColor.White)
-                {
-                    Console.WriteLine("Schachmatt 0 - 1");
-                }
-                else
-                {
-                    Console.WriteLine("Schachmatt 1 - 0");
-                }
 
-            }
-            */
             return movesPlayerColor;
         }
 
@@ -655,6 +793,7 @@ namespace Chess_UI
             }
             if (type == PieceType.Queen)
             {
+                // Königin vereint Fähigkeiten von Turm und Läufer
                 GeneratePieceMove(start, color, PieceType.Rook, moves);
                 GeneratePieceMove(start, color, PieceType.Bishop, moves);
             }
@@ -662,10 +801,10 @@ namespace Chess_UI
             {
                 if (color == PieceColor.White)
                 {
+                    // Falls Bauer nach vorne nicht blockiert ist...
                     if (TheBoard.Squares[start.X + 1, start.Y].Color != PieceColor.White && TheBoard.Squares[start.X + 1, start.Y].Color != PieceColor.Black)
                     {
-                        potentialMoves.Add(new Move(start.X, start.Y, start.X + 1, start.Y));
-
+                        // Weißer Bauer, der noch nicht bewegt wurde, darf zwei Felder nach vorne ziehen
                         if (start.X == 1)
                         {
                             if (TheBoard.Squares[start.X + 2, start.Y].Color != PieceColor.White && TheBoard.Squares[start.X + 2, start.Y].Color != PieceColor.Black)
@@ -673,55 +812,115 @@ namespace Chess_UI
                                 potentialMoves.Add(new Move(start.X, start.Y, start.X + 2, start.Y));
                             }
                         }
+                        // Weißer Bauer, der das Ende des Brettes erreicht, muss zu einer von vier Figuren befördert werden.
+                        if (start.X == 6)
+                        {
+                            potentialMoves.Add(new Move(start.X, start.Y, start.X + 1, start.Y, MoveType.PromotionQueen));
+                            potentialMoves.Add(new Move(start.X, start.Y, start.X + 1, start.Y, MoveType.PromotionRook));
+                            potentialMoves.Add(new Move(start.X, start.Y, start.X + 1, start.Y, MoveType.PromotionBishop));
+                            potentialMoves.Add(new Move(start.X, start.Y, start.X + 1, start.Y, MoveType.PromotionKnight));
+                        }
+                        // Ansonsten normaler Zug.
+                        else
+                        {
+                            potentialMoves.Add(new Move(start.X, start.Y, start.X + 1, start.Y));
+                        }
                     }
+                    // Schlagen in die eine Diagonale
                     if (start.Y + 1 < 8)
                     {
                         if (TheBoard.Squares[start.X + 1, start.Y + 1].Color == PieceColor.White || TheBoard.Squares[start.X + 1, start.Y + 1].Color == PieceColor.Black)
                         {
-                            potentialMoves.Add(new Move(start.X, start.Y, start.X + 1, start.Y + 1));
-                        }
-                        if (TheBoard.Squares[start.X + 1, start.Y + 1].EnPassantPossible)
-                        {
-                            potentialMoves.Add(new Move(start.X, start.Y, start.X + 1, start.Y + 1));
+                            // Schlagen und Beförderung
+                            if (start.X == 6)
+                            {
+                                potentialMoves.Add(new Move(start.X, start.Y, start.X + 1, start.Y + 1, MoveType.PromotionQueen));
+                                potentialMoves.Add(new Move(start.X, start.Y, start.X + 1, start.Y + 1, MoveType.PromotionRook));
+                                potentialMoves.Add(new Move(start.X, start.Y, start.X + 1, start.Y + 1, MoveType.PromotionBishop));
+                                potentialMoves.Add(new Move(start.X, start.Y, start.X + 1, start.Y + 1, MoveType.PromotionKnight));
+                            }
+                            // Normales Schlagen
+                            else
+                            {
+                                potentialMoves.Add(new Move(start.X, start.Y, start.X + 1, start.Y + 1));
+                            }
 
                         }
+                        // En passant
+                        if (TheBoard.enPassantPosition.Y == start.X + 1 && TheBoard.enPassantPosition.X == start.Y + 1)
+                        {
+                            potentialMoves.Add(new Move(start.X, start.Y, start.X + 1, start.Y + 1));
+                        }
                     }
+                    // Schlagen in die andere Diagonale
                     if (start.Y - 1 >= 0)
                     {
                         if (TheBoard.Squares[start.X + 1, start.Y - 1].Color == PieceColor.White || TheBoard.Squares[start.X + 1, start.Y - 1].Color == PieceColor.Black)
                         {
-                            potentialMoves.Add(new Move(start.X, start.Y, start.X + 1, start.Y - 1));
+                            // Schlagen und Beförderung
+                            if (start.X == 6)
+                            {
+                                potentialMoves.Add(new Move(start.X, start.Y, start.X + 1, start.Y - 1, MoveType.PromotionQueen));
+                                potentialMoves.Add(new Move(start.X, start.Y, start.X + 1, start.Y - 1, MoveType.PromotionRook));
+                                potentialMoves.Add(new Move(start.X, start.Y, start.X + 1, start.Y - 1, MoveType.PromotionBishop));
+                                potentialMoves.Add(new Move(start.X, start.Y, start.X + 1, start.Y - 1, MoveType.PromotionKnight));
+                            }
+                            // Normales Schlagen
+                            else
+                            {
+                                potentialMoves.Add(new Move(start.X, start.Y, start.X + 1, start.Y - 1));
+                            }
                         }
-                        if (TheBoard.Squares[start.X + 1, start.Y - 1].EnPassantPossible)
+                        // En passant
+                        if (TheBoard.enPassantPosition.Y == start.X + 1 && TheBoard.enPassantPosition.X == start.Y - 1)
                         {
                             potentialMoves.Add(new Move(start.X, start.Y, start.X + 1, start.Y - 1));
 
                         }
                     }
-
                 }
+                // Analog zu weißem Bauern
                 else if (color == PieceColor.Black)
                 {
                     if (TheBoard.Squares[start.X - 1, start.Y].Color != PieceColor.White && TheBoard.Squares[start.X - 1, start.Y].Color != PieceColor.Black)
                     {
-                        potentialMoves.Add(new Move(start.X, start.Y, start.X - 1, start.Y));
-
                         if (start.X == 6)
                         {
                             if (TheBoard.Squares[start.X - 2, start.Y].Color != PieceColor.White && TheBoard.Squares[start.X - 2, start.Y].Color != PieceColor.Black)
                             {
                                 potentialMoves.Add(new Move(start.X, start.Y, start.X - 2, start.Y));
                             }
-
                         }
+                        if (start.X == 1)
+                        {
+                            potentialMoves.Add(new Move(start.X, start.Y, start.X - 1, start.Y, MoveType.PromotionQueen));
+                            potentialMoves.Add(new Move(start.X, start.Y, start.X - 1, start.Y, MoveType.PromotionRook));
+                            potentialMoves.Add(new Move(start.X, start.Y, start.X - 1, start.Y, MoveType.PromotionBishop));
+                            potentialMoves.Add(new Move(start.X, start.Y, start.X - 1, start.Y, MoveType.PromotionKnight));
+                        }
+                        else
+                        {
+                            potentialMoves.Add(new Move(start.X, start.Y, start.X - 1, start.Y));
+                        }
+
                     }
                     if (start.Y + 1 < 8)
                     {
                         if (TheBoard.Squares[start.X - 1, start.Y + 1].Color == PieceColor.White || TheBoard.Squares[start.X - 1, start.Y + 1].Color == PieceColor.Black)
                         {
-                            potentialMoves.Add(new Move(start.X, start.Y, start.X - 1, start.Y + 1));
+                            if (start.X == 1)
+                            {
+                                potentialMoves.Add(new Move(start.X, start.Y, start.X - 1, start.Y + 1, MoveType.PromotionQueen));
+                                potentialMoves.Add(new Move(start.X, start.Y, start.X - 1, start.Y + 1, MoveType.PromotionRook));
+                                potentialMoves.Add(new Move(start.X, start.Y, start.X - 1, start.Y + 1, MoveType.PromotionBishop));
+                                potentialMoves.Add(new Move(start.X, start.Y, start.X - 1, start.Y + 1, MoveType.PromotionKnight));
+                            }
+                            else
+                            {
+                                potentialMoves.Add(new Move(start.X, start.Y, start.X - 1, start.Y + 1));
+                            }
                         }
-                        if (TheBoard.Squares[start.X - 1, start.Y + 1].EnPassantPossible)
+                        if (TheBoard.enPassantPosition.Y == start.X - 1 && TheBoard.enPassantPosition.X == start.Y + 1)
                         {
                             potentialMoves.Add(new Move(start.X, start.Y, start.X - 1, start.Y + 1));
 
@@ -731,9 +930,19 @@ namespace Chess_UI
                     {
                         if (TheBoard.Squares[start.X - 1, start.Y - 1].Color == PieceColor.White || TheBoard.Squares[start.X - 1, start.Y - 1].Color == PieceColor.Black)
                         {
-                            potentialMoves.Add(new Move(start.X, start.Y, start.X - 1, start.Y - 1));
+                            if (start.X == 1)
+                            {
+                                potentialMoves.Add(new Move(start.X, start.Y, start.X - 1, start.Y - 1, MoveType.PromotionQueen));
+                                potentialMoves.Add(new Move(start.X, start.Y, start.X - 1, start.Y - 1, MoveType.PromotionRook));
+                                potentialMoves.Add(new Move(start.X, start.Y, start.X - 1, start.Y - 1, MoveType.PromotionBishop));
+                                potentialMoves.Add(new Move(start.X, start.Y, start.X - 1, start.Y - 1, MoveType.PromotionKnight));
+                            }
+                            else
+                            {
+                                potentialMoves.Add(new Move(start.X, start.Y, start.X - 1, start.Y - 1));
+                            }
                         }
-                        if (TheBoard.Squares[start.X - 1, start.Y - 1].EnPassantPossible)
+                        if (TheBoard.enPassantPosition.Y == start.X - 1 && TheBoard.enPassantPosition.X == start.Y - 1)
                         {
                             potentialMoves.Add(new Move(start.X, start.Y, start.X - 1, start.Y - 1));
 
@@ -742,10 +951,10 @@ namespace Chess_UI
                 }
             }
 
-
             switch (type)
             {
                 case PieceType.King:
+                    // Züge in alle angrenzenden Felder
                     potentialMoves.Add(new Move(start.X, start.Y, start.X + 1, start.Y));
                     potentialMoves.Add(new Move(start.X, start.Y, start.X - 1, start.Y));
                     potentialMoves.Add(new Move(start.X, start.Y, start.X, start.Y + 1));
@@ -760,10 +969,10 @@ namespace Chess_UI
                         // Lange Rochade weiß
                         if (TheBoard.whiteCastlingLongPossible)
                         {
-                            if(TheBoard.Squares[0, 1].Color == PieceColor.Empty && TheBoard.Squares[0, 2].Color == PieceColor.Empty && TheBoard.Squares[0, 3].Color == PieceColor.Empty)
+                            if (TheBoard.Squares[0, 1].Color == PieceColor.Empty && TheBoard.Squares[0, 2].Color == PieceColor.Empty && TheBoard.Squares[0, 3].Color == PieceColor.Empty)
                             {
                                 potentialMoves.Add(new Move(start.X, start.Y, start.X, start.Y - 2));
-                            }                                
+                            }
                         }
                         // Kurze Rochade weiß
                         if (TheBoard.whiteCastlingShortPossible)
@@ -771,7 +980,7 @@ namespace Chess_UI
                             if (TheBoard.Squares[0, 6].Color == PieceColor.Empty && TheBoard.Squares[0, 5].Color == PieceColor.Empty)
                             {
                                 potentialMoves.Add(new Move(start.X, start.Y, start.X, start.Y + 2));
-                            }                            
+                            }
                         }
                     }
                     else if (color == PieceColor.Black)
@@ -782,7 +991,7 @@ namespace Chess_UI
                             if (TheBoard.Squares[7, 1].Color == PieceColor.Empty && TheBoard.Squares[7, 2].Color == PieceColor.Empty && TheBoard.Squares[7, 3].Color == PieceColor.Empty)
                             {
                                 potentialMoves.Add(new Move(start.X, start.Y, start.X, start.Y - 2));
-                            }                            
+                            }
                         }
                         // Kurze Rochade schwarz
                         if (TheBoard.blackCastlingShortPossible)
@@ -796,6 +1005,7 @@ namespace Chess_UI
                     break;
 
                 case PieceType.Knight:
+                    // L-förmige Züge
                     potentialMoves.Add(new Move(start.X, start.Y, start.X + 2, start.Y + 1));
                     potentialMoves.Add(new Move(start.X, start.Y, start.X + 2, start.Y - 1));
                     potentialMoves.Add(new Move(start.X, start.Y, start.X - 2, start.Y + 1));
@@ -805,7 +1015,6 @@ namespace Chess_UI
                     potentialMoves.Add(new Move(start.X, start.Y, start.X - 1, start.Y + 2));
                     potentialMoves.Add(new Move(start.X, start.Y, start.X - 1, start.Y - 2));
                     break;
-
             }
             // Nur die Züge, die innerhalb des Bretts bleiben, werden an moves angehängt
             foreach (Move move in potentialMoves)

@@ -28,6 +28,28 @@ namespace Chess
             InitializeComponent();
             // Programmablauf fängt hier an
             InitializeForm();
+
+            Console.WriteLine("Enter number as depth for PERFT or 'x' to skip: ");
+            int depth;
+            string input = "";
+            while (input != "x")
+            {
+                input = Console.ReadLine();
+                if (input == "x")
+                {
+                    break;
+                }
+                while (!Int32.TryParse(input, out depth))
+                {                    
+                    input = Console.ReadLine();
+                    if(input == "x")
+                    {
+                        break;
+                    }
+                }
+                perft.countMovesToDepth(depth);
+            }
+
         }
 
         private void InitializeForm()
@@ -121,15 +143,33 @@ namespace Chess
                 // ... wird ermittelt, ob diese Figur mit dem aktuellen Click einen Zug machen kann.
                 if (TheEngine.IsValidMove(selectedX, selectedY, x, y))
                 {
-                    TheEngine.MakeMove(selectedX, selectedY, x, y);
-                    UI.NextMoveMade();
+                
+                    TheEngine.MakeMove(selectedX, selectedY, x, y, MoveType.Default);
 
+                    UI.NextMoveMade();
+                    
                     // ai macht zug
                     if (playing_ai)
                     {
-                        //ai.makeMove();
                         ai.makeMove();
                     }
+                    
+                    if (turnColor == PieceColor.Black)
+                    {
+                        TheEngine.IncrementTurncounter();
+                    }                   
+
+                    /* TODO: Check, ob Figur geschlagen, oder Bauer bewegt -> Halbzugzähler dementsprechend anpassen
+                    if (TheEngine.PieceTakenOrPawnMoved())
+                    {
+                        TheEngine.ResetHalfmoveclock();
+                    }
+                    else
+                    {
+                        TheEngine.IncrementHalfmoveclock();
+                    }
+                    */
+                    
                 }
             }
             // Falls noch keine Figur ausgewählt worden war ...

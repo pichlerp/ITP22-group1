@@ -7,14 +7,18 @@ namespace Chess_UI
 {
     public class Board
     {
-        // Folgende Parameter bestimmen neben den Positionen der Spielfiguren die Spielsituation
-        public int halfmoveClock;
+        // Entweder Weiß oder Schwarz ist am Zug
         public PieceColor turnColor;
+        // Zu Beginn des Spiels sind alle Formen der Rochade erlaubt; im Verlauf des Spiels werden einzelne Möglichkeiten ungültig
         public bool whiteCastlingLongPossible;
         public bool whiteCastlingShortPossible;
         public bool blackCastlingLongPossible;
         public bool blackCastlingShortPossible;
+        // Ein Zug besteht aus einem Halbzug von Weiß und einem Halbzug von Schwarz; sobald Schwarz eine Figur bewegt hat, endet der Zug
         public int turnCounter;
+        // Für Remis werden Halbzüge gezählt, bei denen weder eine Figur geschlagen, noch ein Bauer bewegt wird; ansonsten wird Zähler zurückgesetzt
+        public int halfmoveClock;
+        // Wenn ein Bauer noch nicht bewegt wurde, dann kann dieser um zwei Felder bewegt werden. Das leere Feld, das dabei übersprungen wird, ist jetzt ein gültiges Ziel für gegnerische Bauern, als ob der Bauer dort stünde.
         public Point enPassantPosition;
         int score;
 
@@ -105,27 +109,42 @@ namespace Chess_UI
             }
             // 3. Substring: Übrige Möglichkeiten der Rochade
             string fenCastling = fen.Split(' ')[2];
-            if (fenCastling.Contains('K'))
+            this.whiteCastlingLongPossible = false;
+            this.blackCastlingLongPossible = false;
+            this.whiteCastlingShortPossible = false;
+            this.blackCastlingShortPossible = false;
+            if (fenCastling.Contains('Q'))
             {
                 this.whiteCastlingLongPossible = true;
             }
-            if (fenCastling.Contains('k'))
+            if (fenCastling.Contains('q'))
             {
                 this.blackCastlingLongPossible = true;
             }
-            if (fenCastling.Contains('Q'))
+            if (fenCastling.Contains('K'))
             {
                 this.whiteCastlingShortPossible = true;
             }
-            if (fenCastling.Contains('q'))
+            if (fenCastling.Contains('k'))
             {
                 this.blackCastlingShortPossible = true;
             }
-            // 4. Substring: En passant Position
-            // TODO
+            // 4. Substring: En passant Position in algebraischer Notation
+            string fenEnPassant = fen.Split(' ')[3];
+            if (fenEnPassant == "-")
+            {
+                enPassantPosition.X = enPassantPosition.Y = -1;
+            }
+            else
+            {
+                int row = (int)fenEnPassant[0] - 97;
+                int col = (int)fenEnPassant[1] - 49;
+                enPassantPosition.X = row;
+                enPassantPosition.Y = col;
+            }
             // 5. Substring: Anzahl an Zügen seit Schlagen oder Bauernzug
             string fenHalfmoveClock = fen.Split(' ')[4];
-            this.halfmoveClock= Convert.ToInt32(fenHalfmoveClock);
+            this.halfmoveClock = Convert.ToInt32(fenHalfmoveClock);
             // 6. Substring: Nummer des aktuellen Zugs
             string fenTurnCounter = fen.Split(' ')[5];
             this.turnCounter = Convert.ToInt32(fenTurnCounter);
