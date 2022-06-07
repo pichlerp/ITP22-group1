@@ -4,9 +4,9 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using System.IO;
 using System.Collections.Generic;
-using Chess_UI;
 
-namespace Chess
+
+namespace Chess_UI
 {
     class ChessUI
     {
@@ -207,6 +207,13 @@ namespace Chess
             }
         }
 
+        public void NextMoveMade()
+        {
+            HidePossibleMoves();
+            piece_imageboxes[currentClick.Y, currentClick.X].BackColor = Color.LightGreen;
+            piece_imageboxes[lastClick.Y, lastClick.X].BackColor = Color.LightGreen;
+        }
+
         public void ChessUI_Click(object sender, EventArgs e)
         {
             // x und y der geklickten Picturebox bestimmen
@@ -217,31 +224,30 @@ namespace Chess
             Debug.Assert(UIdebug.CheckCoords(pY, pX));
 
             // Funktion wird abgebrochen wenn Leeres Feld angedrückt wird, ohne eine ausgewählte Figur, oder wenn selbes Feld 2 mal gedrückt wird
-            if (box.Image == null && piece_selected == false || (pX == currentClick.X && pY == currentClick.Y)) return;
-
-            // Highlighting, beim Klicken
-            if (piece_selected)
+            if (box.Image == null && piece_selected == false || (pX == currentClick.X && pY == currentClick.Y))
             {
-                piece_imageboxes[lastClick.Y, lastClick.X].BackColor = Color.Transparent;
-                piece_imageboxes[penultimateClick.Y, penultimateClick.X].BackColor = Color.Transparent;
+                piece_imageboxes[currentClick.Y, currentClick.X].BackColor = Color.Transparent;
+                HidePossibleMoves();
+                piece_selected = false;
+                return;
             }
+
+            // nächsten Zug speichern
+            penultimateClick = lastClick;
+            lastClick = currentClick;
+            currentClick = new Point(pX, pY);
 
             // clickhandler übergibt alle nötigen daten an die Chessengine
             clickHandler(pY, pX, piece_selected);
 
             // Neuen Klick speichern
-            if (!piece_selected)
-            {
-                penultimateClick = lastClick;
-                lastClick = currentClick;
-                currentClick = new Point(pX, pY);
-            }
             if (piece_selected)
             {
+                // Highlighting, beim Klicken
+                piece_imageboxes[lastClick.Y, lastClick.X].BackColor = Color.Transparent;
+                piece_imageboxes[penultimateClick.Y, penultimateClick.X].BackColor = Color.Transparent;
+
                 piece_selected = false;
-                //piece_imageboxes[currentClick.Y, currentClick.X].BackColor = Color.FromArgb(255, 209, 102);
-                //piece_imageboxes[lastClick.Y, lastClick.X].BackColor = Color.FromArgb(255, 209, 102);
-                HidePossibleMoves();
             }
             else
             {

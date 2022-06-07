@@ -16,12 +16,26 @@ namespace Chess_UI
         public bool blackCastlingShortPossible;
         public int turnCounter;
         public Point enPassantPosition;
+        int score;
 
         public Square[,] Squares { get; set; }
 
         public Board(string FEN)
         {
             PositionFromFEN(FEN);
+            score = evalBoard();
+        }
+        public int getScore()
+        {
+            return score;
+        }
+        public PieceType getPieceType(int x, int y)
+        {
+            return Squares[x, y].Type;
+        }
+        public PieceColor getColor(int x, int y)
+        {
+            return Squares[x, y].Color;
         }
         // Forsyth–Edwards-Notation: String beschreibt Spielsituation komplett
         // Beispiel Startposition: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
@@ -115,6 +129,38 @@ namespace Chess_UI
             // 6. Substring: Nummer des aktuellen Zugs
             string fenTurnCounter = fen.Split(' ')[5];
             this.turnCounter = Convert.ToInt32(fenTurnCounter);
+        }
+
+        // gibt Evaluirung für weiß zurück => eval für schwarz = -(eval weiß)
+        int evalBoard()
+        {
+            int score = 0;
+            for (int i = 0; i < 8; i++)
+            {
+                for (int k = 0; k < 8; k++)
+                {
+                    if (getColor(i, k) != PieceColor.Empty)
+                    {
+                        int val = pieceValue(getPieceType(i, k));
+                        score += (getColor(i, k) == PieceColor.White) ? val : -val;
+                    }
+                }
+            }
+            return score;
+        }
+
+        int pieceValue(PieceType t)
+        {
+            switch (t)
+            {
+                case PieceType.Pawn: return 1;
+                case PieceType.Bishop: return 3;
+                case PieceType.Knight: return 3;
+                case PieceType.Rook: return 5;
+                case PieceType.Queen: return 9;
+                case PieceType.King: return 100;
+                default: return -1;
+            }
         }
     }
 }

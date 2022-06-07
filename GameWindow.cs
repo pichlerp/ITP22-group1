@@ -15,9 +15,12 @@ namespace Chess
         int form_width = 1000;
         int form_height = 1000;
         Color backgroundcolor = Color.FromArgb(10, 10, 10); //Color.FromArgb(126, 128, 128);
-        ChessUI UI;
+        static ChessUI UI;
+        bool playing_ai = false;
+        Chess_UI.PieceColor playerColor;
         new ChessMenu Menu;
         static Chess_UI.Engine TheEngine = new Chess_UI.Engine();
+        AI ai;
         Perft perft = new Perft(ref TheEngine); // performance test, move path enumeration
 
         public GameWindow()
@@ -25,7 +28,6 @@ namespace Chess
             InitializeComponent();
             // Programmablauf fängt hier an
             InitializeForm();
-            perft.countMovesToDepth(10);
         }
 
         private void InitializeForm()
@@ -36,7 +38,12 @@ namespace Chess
 
             LoadMenu();
         }
-        Chess_UI.PieceColor playerColor;
+
+        public void initAI(Chess_UI.PieceColor color)
+        {
+            ai = new AI(ref TheEngine, ref UI, color);
+        }
+        
         private void LoadMenu()
         {
             Menu = new ChessMenu(this, MenuStartButtonPressW, MenuStartButtonPressB);
@@ -47,6 +54,12 @@ namespace Chess
             Menu.HideMenu();
             UI = new ChessUI(this, ClickHandler);
             UI.PositionFromFEN(TheEngine.FromPositionCreateFEN(), playerColor);
+            playing_ai = Menu.play_ai;
+
+            if (playing_ai)
+            {
+                ai = new AI(ref TheEngine, ref UI, Chess_UI.PieceColor.Black);
+            }
         }
 
         private void MenuStartButtonPressB(object sender, EventArgs e)
@@ -55,6 +68,13 @@ namespace Chess
             Menu.HideMenu();
             UI = new ChessUI(this, ClickHandler);
             UI.PositionFromFEN(TheEngine.FromPositionCreateFEN(), playerColor);
+            playing_ai = Menu.play_ai;
+
+            if (playing_ai)
+            {
+                ai = new AI(ref TheEngine, ref UI, Chess_UI.PieceColor.White);
+                ai.randomMove();
+            }
         }
 
         private void play_buttonW_Click(object sender, EventArgs e)
@@ -79,7 +99,7 @@ namespace Chess
             Chess_UI.PieceColor turnColor = TheEngine.GetTurnColor();
 
             // Eine Liste von allen legalen Zügen der Figuren der aktuellen Farbe wird erstellt.
-            List<Move> moves = TheEngine.GenerateMoves(turnColor);
+            List<Move> moves = TheEngine.GenerateMoves();
 
             // Je nach Spielerfarbe werden Koordinaten transformiert
             if (playerColor == Chess_UI.PieceColor.White)
@@ -102,8 +122,15 @@ namespace Chess
                 if (TheEngine.IsValidMove(selectedX, selectedY, x, y))
                 {
                     TheEngine.MakeMove(selectedX, selectedY, x, y);
+                    UI.NextMoveMade();
+
+                    // ai macht zug
+                    if (playing_ai)
+                    {
+                        //ai.makeMove();
+                        ai.makeMove();
+                    }
                 }
-                UI.HidePossibleMoves();
             }
             // Falls noch keine Figur ausgewählt worden war ...
             else
@@ -137,22 +164,14 @@ namespace Chess
             TheEngine.GetTheBoard();
 
             // Die Farbe des Gegners in diesem Halbzug wird bestimmt.
-            Chess_UI.PieceColor opponentColor;
-            if (turnColor == Chess_UI.PieceColor.White)
-            {
-                opponentColor = Chess_UI.PieceColor.Black;
-            }
-            else
-            {
-                opponentColor = Chess_UI.PieceColor.White;
-            }
+            Chess_UI.PieceColor opponentColor = (turnColor == Chess_UI.PieceColor.White) ? Chess_UI.PieceColor.Black : Chess_UI.PieceColor.White;
 
             // Falls der Gegner keinen legalen Zug hat, endet das Spiel.
-            if (!TheEngine.LegalMovesExist(TheEngine.GenerateMoves(opponentColor)))
+            if (!TheEngine.LegalMovesExist(TheEngine.GenerateMoves()))
             {
                 gameOver = true;
                 // Gegner ist im Schach und hat keinen legalen Zug -> Schachmatt
-                if (TheEngine.KingInCheck(opponentColor, TheEngine.GenerateMoves(turnColor)))
+                if (TheEngine.KingInCheck(opponentColor, TheEngine.GenerateMoves()))
                 {
                     if (turnColor != Chess_UI.PieceColor.White)
                     {

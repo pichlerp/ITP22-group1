@@ -9,33 +9,52 @@ namespace Chess_UI
 {
     class Engine
     {
+        bool locked = false;
         // Spielaufbau - online Editor mit FEN https://lichess.org/editor
 
         // Startposition
         static readonly string FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
+        // PERFT
+        // static readonly string FEN = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
+        // static readonly string FEN = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1";
+        // static readonly string FEN = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";       
+
         // Test für Schachmatt
-        //static readonly string FEN = "r2q4/8/8/8/8/8/8/4K3 w - - 0 1";
+        // static readonly string FEN = "r2q4/8/8/8/8/8/8/4K3 w - - 0 1";
 
         // Test für Patt
-        //static readonly string FEN = "1k6/3R4/8/5Q2/8/2R5/8/4K3 w - - 0 1"; 
-      
+        // static readonly string FEN = "1k6/3R4/8/5Q2/8/2R5/8/4K3 w - - 0 1"; 
+
         // Tests für Rochade
-        //static readonly string FEN = "r2qk2r/8/8/8/8/8/8/R2QK2R w KQkq - 0 1"; // alle vier Möglichkeiten
-        //static readonly string FEN = "r3k2r/8/8/8/8/8/8/R3K2R w - - 0 1"; // selbe Position, aber Rochaden nicht mehr erlaubt
-        //static readonly string FEN = "4k2r/6r1/8/8/8/8/3R4/R3K3 w Qk - 0 1"; // weiß lange Rochade, schwarz kurze Rochade
+        // static readonly string FEN = "r2qk2r/8/8/8/8/8/8/R2QK2R w KQkq - 0 1"; // alle vier Möglichkeiten
+        // static readonly string FEN = "r3k2r/8/8/8/8/8/8/R3K2R w - - 0 1"; // selbe Position, aber Rochaden nicht mehr erlaubt
+        // static readonly string FEN = "4k2r/6r1/8/8/8/8/3R4/R3K3 w Qk - 0 1"; // weiß lange Rochade, schwarz kurze Rochade
 
         // Tests für Beförderung
-        //static readonly string FEN = "8/8/8/4p1K1/3k1P2/8/8/8 b - - 0 1";
+        // static readonly string FEN = "8/8/8/4p1K1/3k1P2/8/8/8 b - - 0 1";
 
         // Tests für En Passant
-        //static readonly string FEN = "rnbqkbnr/ppppp1pp/8/2P5/5p2/8/PP1PPPPP/RNBQKBNR w KQkq - 0 1";
+        // static readonly string FEN = "rnbqkbnr/ppppp1pp/8/2P5/5p2/8/PP1PPPPP/RNBQKBNR w KQkq - 0 1";
 
         static Board TheBoard = new Board(FEN);
+
+        public ref Board Board()
+        {
+            return ref TheBoard;
+        }
 
         public void setBoardFromFEN(string fen)
         {
             TheBoard = new Board(fen);
+        }
+        public void lockMoves() 
+        {
+            locked = true;
+        }
+        public void unlockMoves()
+        {
+            locked = false;
         }
         internal bool IsValidMove(int startX, int startY, int endX, int endY)
         {
@@ -178,7 +197,7 @@ namespace Chess_UI
         public void MakeMove(Move move)
         {
             MakeMove(move.StartSquare.X, move.StartSquare.Y, move.EndSquare.X, move.EndSquare.Y);
-}
+        }
         internal bool LegalMovesExist(List<Move> moves)
         {
             if(moves.Count == 0)
@@ -464,21 +483,21 @@ namespace Chess_UI
             }
             Console.WriteLine("");
         }
-       
-
-        public List<Move> moves;
+      
+        /*
         public List<Move> GenerateMoves()
         {
             moves = new List<Move>();
-
-
+        */
         public List<Move> movesBothColors;
         public List<Move> movesPlayerColor;
         public List<Move> movesAfter;
-        public List<Move> GenerateMoves(PieceColor color)
+        public List<Move> GenerateMoves()
         {
+            PieceColor color = GetTurnColor();
+
             string SaveState = FromPositionCreateFEN();
-            Console.WriteLine(SaveState);
+            //Console.WriteLine(SaveState);
             movesBothColors = new List<Move>();
             movesAfter = new List<Move>();
             movesPlayerColor = new List<Move>();
@@ -538,7 +557,7 @@ namespace Chess_UI
                 // && move.StartSquare.X != move.EndSquare.X && move.StartSquare.Y != move.EndSquare.Y
                 if (TheBoard.Squares[move.StartSquare.X, move.StartSquare.Y].Color == color)
                 {
-                    Console.WriteLine(move.StartSquare.X + "   " + move.StartSquare.Y + "   " + move.EndSquare.X + "   " +  move.EndSquare.Y);
+                    //Console.WriteLine(move.StartSquare.X + "   " + move.StartSquare.Y + "   " + move.EndSquare.X + "   " +  move.EndSquare.Y);
                     movesPlayerColor.Add(move);
                 }
             }

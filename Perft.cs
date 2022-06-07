@@ -18,23 +18,27 @@ namespace Chess_UI
         public void countMovesToDepth(int maxdepth)
         {
             // zum testen --------------------------------------------------
-            maxdepth = 1;
+            maxdepth = 0;
 
             Console.WriteLine("Counting moves to depth: " + maxdepth);
 
             movecount = 0;
             countMoves(maxdepth);
-            Console.WriteLine("Number of Moves: " + movecount);
+            ulong temp = movecount;
+            Console.WriteLine("Number of Moves: " + movecount.ToString());
         }
         void countMoves(int depth)
         {
             if (depth == 0) return;
-
             string initial_pos = engine.FromPositionCreateFEN();
             List<Move> moves = engine.GenerateMoves();
-            movecount += (ulong)moves.Count;
+            if (depth == 1)
+            {
+                movecount += (ulong)moves.Count;
+            }
 
-            foreach(Move move in moves)
+
+            foreach (Move move in moves)
             {
                 engine.setBoardFromFEN(initial_pos);
                 engine.MakeMove(move);
