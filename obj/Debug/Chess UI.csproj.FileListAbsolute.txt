@@ -1,9 +1,19 @@
-C:\Users\Gerrit\Desktop\ITP22-group1-pichlerp\bin\Debug\Chess UI.exe.config
-C:\Users\Gerrit\Desktop\ITP22-group1-pichlerp\bin\Debug\Chess UI.exe
-C:\Users\Gerrit\Desktop\ITP22-group1-pichlerp\bin\Debug\Chess UI.pdb
-C:\Users\Gerrit\Desktop\ITP22-group1-pichlerp\obj\Debug\Chess UI.csproj.AssemblyReference.cache
-C:\Users\Gerrit\Desktop\ITP22-group1-pichlerp\obj\Debug\Chess_UI.Properties.Resources.resources
-C:\Users\Gerrit\Desktop\ITP22-group1-pichlerp\obj\Debug\Chess UI.csproj.GenerateResource.cache
-C:\Users\Gerrit\Desktop\ITP22-group1-pichlerp\obj\Debug\Chess UI.csproj.CoreCompileInputs.cache
-C:\Users\Gerrit\Desktop\ITP22-group1-pichlerp\obj\Debug\Chess UI.exe
-C:\Users\Gerrit\Desktop\ITP22-group1-pichlerp\obj\Debug\Chess UI.pdb
+C:\Users\Gerrit\Desktop\Chess UI\bin\Debug\Chess UI.exe.config
+C:\Users\Gerrit\Desktop\Chess UI\bin\Debug\Chess UI.exe
+C:\Users\Gerrit\Desktop\Chess UI\bin\Debug\Chess UI.pdb
+C:\Users\Gerrit\Desktop\Chess UI\obj\Debug\Chess UI.csproj.AssemblyReference.cache
+C:\Users\Gerrit\Desktop\Chess UI\obj\Debug\Chess_UI.Properties.Resources.resources
+C:\Users\Gerrit\Desktop\Chess UI\obj\Debug\Chess UI.csproj.GenerateResource.cache
+C:\Users\Gerrit\Desktop\Chess UI\obj\Debug\Chess UI.csproj.CoreCompileInputs.cache
+C:\Users\Gerrit\Desktop\Chess UI\obj\Debug\Chess UI.exe
+C:\Users\Gerrit\Desktop\Chess UI\obj\Debug\Chess UI.pdb
+C:\Users\Peter\source\repos\ITP22-group1-main\bin\Debug\Chess UI.exe.config
+C:\Users\Peter\source\repos\ITP22-group1-main\bin\Debug\Chess UI.exe
+C:\Users\Peter\source\repos\ITP22-group1-main\bin\Debug\Chess UI.pdb
+C:\Users\Peter\source\repos\ITP22-group1-main\obj\Debug\Chess UI.csproj.AssemblyReference.cache
+C:\Users\Peter\source\repos\ITP22-group1-main\obj\Debug\Chess UI.csproj.SuggestedBindingRedirects.cache
+C:\Users\Peter\source\repos\ITP22-group1-main\obj\Debug\Chess_UI.Properties.Resources.resources
+C:\Users\Peter\source\repos\ITP22-group1-main\obj\Debug\Chess UI.csproj.GenerateResource.cache
+C:\Users\Peter\source\repos\ITP22-group1-main\obj\Debug\Chess UI.csproj.CoreCompileInputs.cache
+C:\Users\Peter\source\repos\ITP22-group1-main\obj\Debug\Chess UI.exe
+C:\Users\Peter\source\repos\ITP22-group1-main\obj\Debug\Chess UI.pdb
