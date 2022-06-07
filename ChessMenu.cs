@@ -13,10 +13,12 @@ namespace Chess
         static int menu_box_width = 700;
         int menu_x = 500 - menu_box_width / 2;
         int menu_y = 500 - menu_box_height / 2;
+        public bool play_ai = false;
         Color menu_backcolor = Color.FromArgb(48, 52, 51);
         PictureBox menu_box;
         EventHandler buttonPressW;
         EventHandler buttonPressB;
+        Button play_ai_bt;
         Form form;
         Button play_buttonW;
         Button play_buttonB;
@@ -67,6 +69,23 @@ namespace Chess
             play_buttonB.Font = new Font("Candara Bold", 16, FontStyle.Regular);
             play_buttonB.ForeColor = Color.FromArgb(223, 223, 223);
             play_buttonB.FlatStyle = FlatStyle.Flat;
+
+            play_ai_bt = new Button();
+            form.Controls.Add(play_ai_bt);
+            play_ai_bt.Click += playAI;
+            play_ai_bt.Size = new Size(350, 50);
+            play_ai_bt.Parent = menu_box;
+            play_ai_bt.Location = new Point(menu_box_width / 2 - play_buttonB.Width / 2, 400);
+            play_ai_bt.Text = "Spiel gegen KI";
+            play_ai_bt.Font = new Font("Candara Bold", 16, FontStyle.Regular);
+            play_ai_bt.ForeColor = Color.FromArgb(223, 223, 223);
+            play_ai_bt.FlatStyle = FlatStyle.Flat;
+        }
+        public void playAI(object sender, EventArgs e)
+        {
+            play_ai_bt.Text = "Farbe wählen";
+            play_ai_bt.Enabled = false;
+            play_ai = true;
         }
         public void HideMenu()
         {

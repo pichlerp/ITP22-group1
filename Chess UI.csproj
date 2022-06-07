@@ -49,8 +49,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AI.cs" />
     <Compile Include="Board.cs" />
     <Compile Include="ChessMenu.cs" />
+    <Compile Include="Chesspiece.cs" />
     <Compile Include="ChessUI.cs" />
     <Compile Include="Engine.cs" />
     <Compile Include="GameWindow.cs">
