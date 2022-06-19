@@ -17,6 +17,7 @@ namespace Chess
         Color backgroundcolor = Color.FromArgb(10, 10, 10); //Color.FromArgb(126, 128, 128);
         static ChessUI UI;
         bool playing_ai = false;
+        PieceColor AIcolor = PieceColor.Empty;
         Chess_UI.PieceColor playerColor;
         new ChessMenu Menu;
         static Chess_UI.Engine TheEngine = new Chess_UI.Engine();
@@ -29,6 +30,11 @@ namespace Chess
             // Programmablauf fängt hier an
             InitializeForm();
 
+            Timer timer = new Timer();
+            timer.Interval = 500;
+            timer.Tick += new EventHandler(CheckIfAIShouldMove);  
+            timer.Enabled = true;
+
             Console.WriteLine("Enter number as depth for PERFT or 'x' to skip: ");
             int depth;
             string input = "";
@@ -40,9 +46,9 @@ namespace Chess
                     break;
                 }
                 while (!Int32.TryParse(input, out depth))
-                {                    
+                {
                     input = Console.ReadLine();
-                    if(input == "x")
+                    if (input == "x")
                     {
                         break;
                     }
@@ -61,15 +67,18 @@ namespace Chess
             LoadMenu();
         }
 
+        /*
         public void initAI(Chess_UI.PieceColor color)
         {
             ai = new AI(ref TheEngine, ref UI, color);
         }
-        
+        */
+
         private void LoadMenu()
         {
             Menu = new ChessMenu(this, MenuStartButtonPressW, MenuStartButtonPressB);
         }
+
         private void MenuStartButtonPressW(object sender, EventArgs e)
         {
             playerColor = Chess_UI.PieceColor.White;
@@ -80,7 +89,8 @@ namespace Chess
 
             if (playing_ai)
             {
-                ai = new AI(ref TheEngine, ref UI, Chess_UI.PieceColor.Black);
+                ai = new AI(Chess_UI.PieceColor.Black);
+                AIcolor = PieceColor.Black;
             }
         }
 
@@ -94,8 +104,9 @@ namespace Chess
 
             if (playing_ai)
             {
-                ai = new AI(ref TheEngine, ref UI, Chess_UI.PieceColor.White);
-                ai.randomMove();
+                ai = new AI(Chess_UI.PieceColor.White);
+                AIcolor = PieceColor.White;
+                //ai.randomMove();
             }
         }
 
@@ -111,8 +122,10 @@ namespace Chess
         bool gameOver = false;
         private void ClickHandler(int y, int x, bool piece_selected)
         {
+            TheEngine.UpdateChecksAndGameOver();
+
             // Wenn das Spiel vorbei ist, sollen Clicks verworfen werden.
-            if (gameOver)
+            if (gameOver || TheEngine.GetTurnColor() == AIcolor)
             {
                 return;
             }
@@ -143,21 +156,31 @@ namespace Chess
                 // ... wird ermittelt, ob diese Figur mit dem aktuellen Click einen Zug machen kann.
                 if (TheEngine.IsValidMove(selectedX, selectedY, x, y))
                 {
-                
+                    UI.NextMoveMade();
+
+                    /*
+                    // ai macht zug
+                    if (turnColor == AIcolor)
+                    {
+                        //ai.randomMove();
+                        //ai.makeMove();
+                        //String backup = TheEngine.FromPositionCreateFEN();
+                        Move AIMove = ai.AlphaBetaRoot(TheEngine, 2);
+                        //TheEngine.setBoardFromFEN(backup);
+                        TheEngine.MakeMove(AIMove.StartSquare.X, AIMove.StartSquare.Y, AIMove.EndSquare.X, AIMove.EndSquare.Y, MoveType.Default);
+                    }
+                    else
+                    {
+                        
+                    }
+                    */
+
                     TheEngine.MakeMove(selectedX, selectedY, x, y, MoveType.Default);
 
-                    UI.NextMoveMade();
-                    
-                    // ai macht zug
-                    if (playing_ai)
-                    {
-                        ai.makeMove();
-                    }
-                    
                     if (turnColor == PieceColor.Black)
                     {
                         TheEngine.IncrementTurncounter();
-                    }                   
+                    }
 
                     /* TODO: Check, ob Figur geschlagen, oder Bauer bewegt -> Halbzugzähler dementsprechend anpassen
                     if (TheEngine.PieceTakenOrPawnMoved())
@@ -169,7 +192,7 @@ namespace Chess
                         TheEngine.IncrementHalfmoveclock();
                     }
                     */
-                    
+
                 }
             }
             // Falls noch keine Figur ausgewählt worden war ...
@@ -204,34 +227,70 @@ namespace Chess
             TheEngine.GetTheBoard();
 
             // Die Farbe des Gegners in diesem Halbzug wird bestimmt.
-            Chess_UI.PieceColor opponentColor = (turnColor == Chess_UI.PieceColor.White) ? Chess_UI.PieceColor.Black : Chess_UI.PieceColor.White;
+            PieceColor opponentColor = (turnColor == Chess_UI.PieceColor.White) ? Chess_UI.PieceColor.Black : Chess_UI.PieceColor.White;
 
-            // Falls der Gegner keinen legalen Zug hat, endet das Spiel.
-            if (!TheEngine.LegalMovesExist(TheEngine.GenerateMoves()))
+
+            int gameStatus = TheEngine.CheckGameOver();
+
+            switch (gameStatus)
             {
-                gameOver = true;
-                // Gegner ist im Schach und hat keinen legalen Zug -> Schachmatt
-                if (TheEngine.KingInCheck(opponentColor, TheEngine.GenerateMoves()))
-                {
-                    if (turnColor != Chess_UI.PieceColor.White)
-                    {
-                        ShowDialog("Weiß ist Schachmatt", "Ergebnis: 0 - 1");
-
-                    }
-                    else
-                    {
-                        ShowDialog("Schwarz ist Schachmatt", "Ergebnis: 1 - 0");
-                    }
-                }
-                // Gegner ist nicht im Schach und hat keinen legalen Zug -> Patt
-                else
-                {
+                case 0:
+                    gameOver = true;
+                    ShowDialog("Weiß ist Schachmatt", "Ergebnis: 0 - 1");
+                    break;
+                case 1:
+                    gameOver = true;
+                    ShowDialog("Schwarz ist Schachmatt", "Ergebnis: 1 - 0");
+                    break;
+                case 2:
+                    gameOver = true;
                     ShowDialog("Remis durch Patt", "Ergebnis: 1/2 - 1/2");
-                }
-
+                    break;
             }
 
         }
+        private void CheckIfAIShouldMove(object Sender, EventArgs e)
+        {
+            PieceColor turnColor = TheEngine.GetTurnColor();
+            if (turnColor == AIcolor)
+            {
+                Move AIMove = ai.AlphaBetaRoot(TheEngine, 3);
+                TheEngine.MakeMove(AIMove.StartSquare.X, AIMove.StartSquare.Y, AIMove.EndSquare.X, AIMove.EndSquare.Y, MoveType.PromotionQueen);
+
+                //TheEngine.MakeMove(6, 2, 4, 2, MoveType.Default);
+
+                if (turnColor == PieceColor.Black)
+                {
+                    TheEngine.IncrementTurncounter();
+                }
+                // Die Engine serialisiert die Position und daraus wird das GUI gebildet
+                UI.PositionFromFEN(TheEngine.FromPositionCreateFEN(), playerColor);
+                // Zusätzlich wird das Brett in der Konsole ausgegeben.
+                TheEngine.GetTheBoard();
+
+                int gameStatus = TheEngine.CheckGameOver();
+
+                Console.WriteLine(gameStatus);
+
+                switch (gameStatus)
+                {
+                    case 0:
+                        gameOver = true;
+                        ShowDialog("Weiß ist Schachmatt", "Ergebnis: 0 - 1");
+                        break;
+                    case 1:
+                        gameOver = true;
+                        ShowDialog("Schwarz ist Schachmatt", "Ergebnis: 1 - 0");
+                        break;
+                    case 2:
+                        gameOver = true;
+                        ShowDialog("Remis durch Patt", "Ergebnis: 1/2 - 1/2");
+                        break;
+                }
+                
+            }           
+        }
+
         public static void ShowDialog(string text, string caption)
         {
             Form prompt = new Form()

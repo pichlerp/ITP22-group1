@@ -9,18 +9,19 @@ namespace Chess_UI
 {
     class Engine
     {
-        bool locked = false;
+        //bool locked = false;
+
         public List<Move> movesPlayerColor;
         // Spielaufbau - online Editor mit FEN https://lichess.org/editor
 
         // Startposition
-        // static readonly string FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        static readonly string FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
         // PERFT siehe https://www.chessprogramming.org/Perft_Results
         // PERFT 3: 97898 statt 97862 (Stockfish) -> Bauer bedroht Feld, durch das König bei Rochade zieht
         // static readonly string FEN = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
 
-        static readonly string FEN = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/P1N2Q2/1PPBBPpP/R3K2R w KQkq - 0 1";
+        // static readonly string FEN = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/P1N2Q2/1PPBBPpP/R3K2R w KQkq - 0 1";
 
         // static readonly string FEN = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1";
         // static readonly string FEN = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";
@@ -40,7 +41,7 @@ namespace Chess_UI
         // Tests für Rochade
         // PERFT 4: 1288070 statt 1288065 (Stockfish)
         // static readonly string FEN = "r2qk2r/8/8/8/8/8/8/R2QK2R w KQkq - 0 1"; // alle vier Möglichkeiten
-      
+
         // static readonly string FEN = "r3k2r/8/8/8/8/8/8/R3K2R w - - 0 1"; // selbe Position, aber Rochaden nicht mehr erlaubt
         // static readonly string FEN = "4k2r/6r1/8/8/8/8/3R4/R3K3 w Qk - 0 1"; // weiß lange Rochade, schwarz kurze Rochade
 
@@ -53,18 +54,20 @@ namespace Chess_UI
         // static readonly string FEN = "rnbqkbnr/ppppp1pp/8/2P5/5p2/8/PP1PPPPP/RNBQKBNR w KQkq - 0 1"; // kein En Passant in diesem Zug möglich, aber viele Varianten, die zu En Passant führen
         // static readonly string FEN = "rnbqkbnr/ppppp1pp/8/2P5/5pP1/8/PP1PPP1P/RNBQKBNR b KQkq g3 0 1"; // selbe Position, aber FEN gibt jetzt g3 als legales Ziel für En Passant an -> Bauer auf f4 hat direkt Möglichkeit für En Passant
 
-        static Board TheBoard = new Board(FEN);
+        Board TheBoard = new Board(FEN);
 
-        public ref Board Board()
+        public Board Board()
         {
-            return ref TheBoard;
+            return TheBoard;
         }
 
         public void setBoardFromFEN(string fen)
         {
             TheBoard = new Board(fen);
         }
-        public void lockMoves() 
+
+        /*
+        public void lockMoves()
         {
             locked = true;
         }
@@ -72,6 +75,8 @@ namespace Chess_UI
         {
             locked = false;
         }
+        */
+
         internal bool IsValidMove(int startX, int startY, int endX, int endY)
         {
             foreach (Move move in movesBothColors)
@@ -369,6 +374,7 @@ namespace Chess_UI
                     TheBoard.Squares[0, 3].Type = PieceType.Rook;
                     TheBoard.Squares[0, 3].Color = PieceColor.White;
                     TheBoard.Squares[0, 0].Color = PieceColor.Empty;
+                    TheBoard.whiteCastled = true;
                 }
                 // Kurze Rochade weiß
                 else if (endX == 0 && endY == 6 && TheBoard.whiteCastlingShortPossible)
@@ -376,6 +382,7 @@ namespace Chess_UI
                     TheBoard.Squares[0, 5].Type = PieceType.Rook;
                     TheBoard.Squares[0, 5].Color = PieceColor.White;
                     TheBoard.Squares[0, 7].Color = PieceColor.Empty;
+                    TheBoard.whiteCastled = true;
                 }
                 // Lange Rochade schwarz
                 else if (endX == 7 && endY == 2 && TheBoard.blackCastlingLongPossible)
@@ -383,6 +390,7 @@ namespace Chess_UI
                     TheBoard.Squares[7, 3].Type = PieceType.Rook;
                     TheBoard.Squares[7, 3].Color = PieceColor.Black;
                     TheBoard.Squares[7, 0].Color = PieceColor.Empty;
+                    TheBoard.blackCastled = true;
                 }
                 // Kurze Rochade schwarz
                 else if (endX == 7 && endY == 6 && TheBoard.blackCastlingShortPossible)
@@ -390,6 +398,7 @@ namespace Chess_UI
                     TheBoard.Squares[7, 5].Type = PieceType.Rook;
                     TheBoard.Squares[7, 5].Color = PieceColor.Black;
                     TheBoard.Squares[7, 7].Color = PieceColor.Empty;
+                    TheBoard.blackCastled = true;
                 }
             }
             // Weißer König wird bewegt -> Weiß verliert beide Rochaden
@@ -555,7 +564,7 @@ namespace Chess_UI
             }
             Console.WriteLine("");
         }
-      
+
         public List<Move> movesBothColors;
         public List<Move> movesAfter;
 
@@ -564,7 +573,7 @@ namespace Chess_UI
             PieceColor color = GetTurnColor();
 
             string SaveState = FromPositionCreateFEN();
-          
+
             movesBothColors = new List<Move>();
             movesAfter = new List<Move>();
             movesPlayerColor = new List<Move>();
@@ -716,7 +725,7 @@ namespace Chess_UI
             return movesPlayerColor;
         }
 
-        private void GeneratePieceMove(Point start, PieceColor color, PieceType type, List<Move> moves)
+        public void GeneratePieceMove(Point start, PieceColor color, PieceType type, List<Move> moves)
         {
             // Liste von allen möglichen Zügen, die teilweise out of bounds sind -> diese werden nicht in die Liste der gültigen Züge übernommen
             List<Move> potentialMoves = new List<Move>();
@@ -1031,5 +1040,62 @@ namespace Chess_UI
                 }
             }
         }
+
+        public void UpdateChecksAndGameOver()
+        {
+            List<Move> moves = new List<Move>();
+            moves = GenerateMoves();
+
+            if(KingInCheck(PieceColor.White, moves))
+            {
+                TheBoard.whiteInCheck = true;
+            }
+            if (KingInCheck(PieceColor.Black, moves))
+            {
+                TheBoard.blackInCheck = true;
+            }
+
+            if (!LegalMovesExist(moves))
+            {
+                PieceColor opponentColor = (TheBoard.turnColor == PieceColor.White) ? PieceColor.Black : PieceColor.White;
+
+                // Gegner ist im Schach und hat keinen legalen Zug -> Schachmatt
+                if (KingInCheck(opponentColor, moves))
+                {
+                    if (TheBoard.turnColor != PieceColor.White)
+                    {
+                        TheBoard.whiteLost = true;
+                    }
+                    else
+                    {
+                        TheBoard.blackLost = true;
+                    }
+                }
+                // Gegner ist nicht im Schach und hat keinen legalen Zug -> Patt
+                else
+                {
+                    TheBoard.stalemate = true;
+                }
+            }
+        }
+
+        public int CheckGameOver()
+        {
+            UpdateChecksAndGameOver();
+            if (TheBoard.whiteLost)
+            {
+                return 0;
+            }
+            if (TheBoard.blackLost)
+            {
+                return 1;
+            }
+            if (TheBoard.stalemate)
+            {
+                return 2;
+            }
+            return -1;
+        }
+
     }
 }

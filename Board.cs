@@ -20,7 +20,16 @@ namespace Chess_UI
         public int halfmoveClock;
         // Wenn ein Bauer noch nicht bewegt wurde, dann kann dieser um zwei Felder bewegt werden. Das leere Feld, das dabei übersprungen wird, ist jetzt ein gültiges Ziel für gegnerische Bauern, als ob der Bauer dort stünde.
         public Point enPassantPosition;
-        int score;
+        // Bewertung des Spielbretts; hoher Wert -> Weiß ist im Vorteil, niedriger Wert -> Schwarz ist im Vorteil
+        public int score;
+        // Parameter, die für Suche und Spielende relevant sind
+        public bool whiteCastled = false;
+        public bool blackCastled = false;
+        public bool whiteInCheck = false;
+        public bool blackInCheck = false;
+        public bool whiteLost = false;
+        public bool blackLost = false;
+        public bool stalemate = false;
 
         public Square[,] Squares { get; set; }
 

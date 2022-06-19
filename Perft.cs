@@ -26,7 +26,7 @@ namespace Chess_UI
                 // Divide: Die Anzahl der Blätter wird aufgeteilt auf den ersten Zug, der zu diesen Blättern geführt hat
                 // Dazu werden alle Positionen getrennt betrachtet, die nach einem Zug aus der gegebenen Position entstehen
                 List<string> positions = new List<string>();
-                List<Move> moves = engine.GenerateMoves(engine.GetTurnColor());
+                List<Move> moves = engine.GenerateMoves();
 
                 // Es wird eine Liste erstellt, die alle Positionen als FEN enthält, die durch einen Zug aus der gegebenen Position entstehen können
                 foreach (Move move in moves)
@@ -101,7 +101,7 @@ namespace Chess_UI
 
             string initial_pos = engine.FromPositionCreateFEN();
 
-            List<Move> moves = engine.GenerateMoves(engine.GetTurnColor());
+            List<Move> moves = engine.GenerateMoves();
             if (depth == 1)
             {
                 counter += moves.Count;
