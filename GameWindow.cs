@@ -9,7 +9,7 @@ using static Chess_UI.Engine;
 using Chess_UI;
 
 namespace Chess
-{
+{    
     public partial class GameWindow : Form
     {
         int form_width = 1000;
@@ -23,6 +23,8 @@ namespace Chess
         static Chess_UI.Engine TheEngine = new Chess_UI.Engine();
         AI ai;
         Perft perft = new Perft(ref TheEngine); // performance test, move path enumeration
+        
+        System.Media.SoundPlayer moveMadeSound = new System.Media.SoundPlayer(Chess_UI.Properties.Resources.boing);
 
         public GameWindow()
         {
@@ -122,7 +124,7 @@ namespace Chess
         bool gameOver = false;
         private void ClickHandler(int y, int x, bool piece_selected)
         {
-            TheEngine.UpdateChecksAndGameOver();
+            TheEngine.UpdateChecksAndGameOver(TheEngine.FromPositionCreateFEN());
 
             // Wenn das Spiel vorbei ist, sollen Clicks verworfen werden.
             if (gameOver || TheEngine.GetTurnColor() == AIcolor)
@@ -230,7 +232,7 @@ namespace Chess
             PieceColor opponentColor = (turnColor == Chess_UI.PieceColor.White) ? Chess_UI.PieceColor.Black : Chess_UI.PieceColor.White;
 
 
-            int gameStatus = TheEngine.CheckGameOver();
+            int gameStatus = TheEngine.CheckGameOver(TheEngine.FromPositionCreateFEN());
 
             switch (gameStatus)
             {
@@ -254,7 +256,8 @@ namespace Chess
             PieceColor turnColor = TheEngine.GetTurnColor();
             if (turnColor == AIcolor)
             {
-                Move AIMove = ai.AlphaBetaRoot(TheEngine, 3);
+                Move AIMove = AI.AlphaBetaRoot(TheEngine, 3);                
+                moveMadeSound.Play();
                 TheEngine.MakeMove(AIMove.StartSquare.X, AIMove.StartSquare.Y, AIMove.EndSquare.X, AIMove.EndSquare.Y, MoveType.PromotionQueen);
 
                 //TheEngine.MakeMove(6, 2, 4, 2, MoveType.Default);
@@ -268,7 +271,7 @@ namespace Chess
                 // Zusätzlich wird das Brett in der Konsole ausgegeben.
                 TheEngine.GetTheBoard();
 
-                int gameStatus = TheEngine.CheckGameOver();
+                int gameStatus = TheEngine.CheckGameOver(TheEngine.FromPositionCreateFEN());
 
                 Console.WriteLine(gameStatus);
 

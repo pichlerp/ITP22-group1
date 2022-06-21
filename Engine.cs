@@ -33,7 +33,9 @@ namespace Chess_UI
         // static readonly string FEN = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";       
 
         // Test für Schachmatt
-        // static readonly string FEN = "r2q4/8/8/8/8/8/8/4K3 w - - 0 1";
+        //static readonly string FEN = "r2q4/8/8/8/8/8/8/4K3 w - - 0 1";
+        //static readonly string FEN = "rk6/ppp4p/6p1/5p2/8/1P1R1NP1/PBPPPPBP/1K6 w - - 0 1";
+        
 
         // Test für Patt
         // static readonly string FEN = "1k6/3R4/8/5Q2/8/2R5/8/4K3 w - - 0 1"; 
@@ -1041,10 +1043,10 @@ namespace Chess_UI
             }
         }
 
-        public void UpdateChecksAndGameOver()
+        public void UpdateChecksAndGameOver(String FEN)
         {
-            List<Move> moves = new List<Move>();
-            moves = GenerateMoves();
+            setBoardFromFEN(FEN);
+            List<Move> moves = GenerateMoves();
 
             if(KingInCheck(PieceColor.White, moves))
             {
@@ -1055,12 +1057,20 @@ namespace Chess_UI
                 TheBoard.blackInCheck = true;
             }
 
-            if (!LegalMovesExist(moves))
+            if (moves.Count == 0)
             {
-                PieceColor opponentColor = (TheBoard.turnColor == PieceColor.White) ? PieceColor.Black : PieceColor.White;
-
+                PieceColor turnColor = TheBoard.turnColor;
+                PieceColor opponentColor = (turnColor == PieceColor.White) ? PieceColor.Black : PieceColor.White;
+                TheBoard.turnColor = opponentColor;
+                moves = GenerateMoves();
+                /*
+                foreach(Move move in moves)
+                {
+                    Console.WriteLine(move.StartSquare.X + " " + move.StartSquare.Y + " " + move.EndSquare.X + " " + move.EndSquare.Y);
+                }
+                */
                 // Gegner ist im Schach und hat keinen legalen Zug -> Schachmatt
-                if (KingInCheck(opponentColor, moves))
+                if (KingInCheck(turnColor, moves))
                 {
                     if (TheBoard.turnColor != PieceColor.White)
                     {
@@ -1079,9 +1089,9 @@ namespace Chess_UI
             }
         }
 
-        public int CheckGameOver()
+        public int CheckGameOver(String FEN)
         {
-            UpdateChecksAndGameOver();
+            UpdateChecksAndGameOver(FEN);
             if (TheBoard.whiteLost)
             {
                 return 0;
