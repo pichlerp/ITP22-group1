@@ -4,14 +4,20 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using System.IO;
 using System.Collections.Generic;
+using System.Drawing.Drawing2D;
 
 
 namespace Chess_UI
 {
     class ChessUI
     {
-        static int height = 800;
-        static int width = 800;
+
+        static int height = Screen.PrimaryScreen.Bounds.Height - 62 > 800 ? 800 : Screen.PrimaryScreen.Bounds.Height - 62;
+        static int width = height;
+
+        static int findmiddlewidth = (Screen.PrimaryScreen.Bounds.Width - width) / 2;
+        static int findmiddleheight = (Screen.PrimaryScreen.Bounds.Height - height - 62) / 2;
+
         Point lastClick;
         Point currentClick;
         Point penultimateClick;
@@ -42,7 +48,7 @@ namespace Chess_UI
             board = new Bitmap(width, height);
             boardbox = new PictureBox
             {
-                Location = new Point(100, 100),
+                Location = new Point(findmiddlewidth, findmiddleheight),
                 Size = new Size(width, height)
             };
             form.Controls.Add(boardbox);
@@ -51,7 +57,7 @@ namespace Chess_UI
             {
                 for (int k = 0; k < height; k++)
                 {
-                    if ((i / 100 % 2 == 0 ^ k / 100 % 2 == 0))
+                    if ((i / (width/8) % 2 == 0 ^ k / (height/8) % 2 == 0))
                     {
                         board.SetPixel(i, k, dark);
                     }
@@ -69,8 +75,8 @@ namespace Chess_UI
                 {
                     piece_imageboxes[i, k] = new PictureBox
                     {
-                        Size = new Size(100, 100),
-                        Location = new Point(k * 100, i * 100)
+                        Size = new Size((width / 8), (height / 8)),
+                        Location = new Point(k * (width / 8), i * (height / 8))
                     };
                     piece_imageboxes[i, k].Click += ChessUI_Click;
                     form.Controls.Add(piece_imageboxes[i, k]);
@@ -191,20 +197,28 @@ namespace Chess_UI
                             // Darstellung für Weiß
                             newrank = file;
                             newfile = 7 - rank;
-                            piece_imageboxes[newfile, newrank].Image = Image.FromFile(projectDirectory + picturePath);
+                            piece_imageboxes[newfile, newrank].Image = resizeImage(Image.FromFile(projectDirectory + picturePath), width/8, height/8);
                         }
                         else
                         {
                             // Darstellung für Schwarz
                             newrank = 7 - file;
                             newfile = rank;
-                            piece_imageboxes[newfile, newrank].Image = Image.FromFile(projectDirectory + picturePath);
+                            piece_imageboxes[newfile, newrank].Image = resizeImage(Image.FromFile(projectDirectory + picturePath), width / 8, height / 8);
                         }
                         file++;
                     }
                 }
                 counter++;
             }
+        }
+        public static Image resizeImage(Image image, int new_height, int new_width)
+        {
+            Bitmap new_image = new Bitmap(new_width, new_height);
+            Graphics g = Graphics.FromImage((Image)new_image);
+            g.InterpolationMode = InterpolationMode.High;
+            g.DrawImage(image, 0, 0, new_width, new_height);
+            return new_image;
         }
 
         public void NextMoveMade()

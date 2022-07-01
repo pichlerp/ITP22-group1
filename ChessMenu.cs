@@ -13,6 +13,8 @@ namespace Chess
         static int menu_box_width = 700;
         int menu_x = 500 - menu_box_width / 2;
         int menu_y = 500 - menu_box_height / 2;
+        static int findmiddlewidth = (Screen.PrimaryScreen.Bounds.Width - menu_box_width) / 2;
+        static int findmiddleheight = (Screen.PrimaryScreen.Bounds.Height - menu_box_height - 62) / 2;
         public bool play_ai = false;
         Color menu_backcolor = Color.FromArgb(48, 52, 51);
         PictureBox menu_box;
@@ -32,7 +34,7 @@ namespace Chess
             menu_box = new PictureBox
             {
                 Size = new Size(menu_box_width, menu_box_height),
-                Location = new Point(menu_x, menu_y),            
+                Location = new Point(findmiddlewidth, findmiddleheight),            
                 BackColor = menu_backcolor
             };
             form.Controls.Add(menu_box);
