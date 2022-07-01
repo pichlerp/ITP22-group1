@@ -24,6 +24,12 @@ namespace Chess
         AI ai;
         Perft perft = new Perft(ref TheEngine); // performance test, move path enumeration
 
+        System.Media.SoundPlayer SFXmoveMade = new System.Media.SoundPlayer(Chess_UI.Properties.Resources.move_regular);
+        System.Media.SoundPlayer SFXcheck = new System.Media.SoundPlayer(Chess_UI.Properties.Resources.move_check);
+        System.Media.SoundPlayer SFXpieceTaken = new System.Media.SoundPlayer(Chess_UI.Properties.Resources.move_piecetaken);
+
+
+
         public GameWindow()
         {
             InitializeComponent();
@@ -32,7 +38,7 @@ namespace Chess
 
             Timer timer = new Timer();
             timer.Interval = 500;
-            timer.Tick += new EventHandler(CheckIfAIShouldMove);  
+            timer.Tick += new EventHandler(CheckIfAIShouldMove);
             timer.Enabled = true;
 
             Console.WriteLine("Enter number as depth for PERFT or 'x' to skip: ");
@@ -63,7 +69,6 @@ namespace Chess
             this.BackColor = backgroundcolor;
             this.StartPosition = FormStartPosition.CenterScreen;
             this.Size = new Size(form_width, form_height);
-
 
             LoadMenu();
         }
@@ -107,7 +112,6 @@ namespace Chess
             {
                 ai = new AI(Chess_UI.PieceColor.White);
                 AIcolor = PieceColor.White;
-                //ai.randomMove();
             }
         }
 
@@ -123,7 +127,7 @@ namespace Chess
         bool gameOver = false;
         private void ClickHandler(int y, int x, bool piece_selected)
         {
-            TheEngine.UpdateChecksAndGameOver();
+            TheEngine.UpdateChecksAndGameOver(TheEngine.FromPositionCreateFEN());
 
             // Wenn das Spiel vorbei ist, sollen Clicks verworfen werden.
             if (gameOver || TheEngine.GetTurnColor() == AIcolor)
@@ -133,6 +137,9 @@ namespace Chess
 
             // Farbe des aktuellen Halbzugs wird aktualisiert.
             Chess_UI.PieceColor turnColor = TheEngine.GetTurnColor();
+
+            // Die Farbe des Gegners in diesem Halbzug wird bestimmt.
+            PieceColor opponentColor = (turnColor == Chess_UI.PieceColor.White) ? Chess_UI.PieceColor.Black : Chess_UI.PieceColor.White;
 
             // Eine Liste von allen legalen Zügen der Figuren der aktuellen Farbe wird erstellt.
             List<Move> moves = TheEngine.GenerateMoves();
@@ -176,7 +183,25 @@ namespace Chess
                     }
                     */
 
+                    bool pieceTaken = TheEngine.Board().Squares[x, y].Color != PieceColor.Empty;
+
                     TheEngine.MakeMove(selectedX, selectedY, x, y, MoveType.Default);
+
+                    if (TheEngine.KingInCheck(opponentColor, TheEngine.GenerateMoves(turnColor)))
+                    {
+                        // Soundeffekt, wenn König in Schach gesetzt wird
+                        SFXcheck.Play();
+                    }
+                    else if (pieceTaken)
+                    {
+                        // Soundeffekt, wenn Figur geschlagen wird
+                        SFXpieceTaken.Play();
+                    }
+                    else
+                    {
+                        // Sonst anderer Soundeffekt
+                        SFXmoveMade.Play();
+                    }
 
                     if (turnColor == PieceColor.Black)
                     {
@@ -194,10 +219,6 @@ namespace Chess
                     }
                     */
 
-                }
-                else
-                {
-                    UI.HidePossibleMoves();
                 }
             }
             // Falls noch keine Figur ausgewählt worden war ...
@@ -231,11 +252,7 @@ namespace Chess
             // Zusätzlich wird das Brett in der Konsole ausgegeben.
             TheEngine.GetTheBoard();
 
-            // Die Farbe des Gegners in diesem Halbzug wird bestimmt.
-            PieceColor opponentColor = (turnColor == Chess_UI.PieceColor.White) ? Chess_UI.PieceColor.Black : Chess_UI.PieceColor.White;
-
-
-            int gameStatus = TheEngine.CheckGameOver();
+            int gameStatus = TheEngine.CheckGameOver(TheEngine.FromPositionCreateFEN());
 
             switch (gameStatus)
             {
@@ -257,23 +274,43 @@ namespace Chess
         private void CheckIfAIShouldMove(object Sender, EventArgs e)
         {
             PieceColor turnColor = TheEngine.GetTurnColor();
-            if (turnColor == AIcolor)
+            if (turnColor == AIcolor && !gameOver)
             {
-                Move AIMove = ai.AlphaBetaRoot(TheEngine, 3);
+                PieceColor opponentColor = (turnColor == Chess_UI.PieceColor.White) ? Chess_UI.PieceColor.Black : Chess_UI.PieceColor.White;
+
+                Move AIMove = AI.AlphaBetaRoot(TheEngine, 3);
+
+                bool pieceTaken = TheEngine.Board().Squares[AIMove.EndSquare.X, AIMove.EndSquare.Y].Color != PieceColor.Empty;
+
                 TheEngine.MakeMove(AIMove.StartSquare.X, AIMove.StartSquare.Y, AIMove.EndSquare.X, AIMove.EndSquare.Y, MoveType.PromotionQueen);
 
-                //TheEngine.MakeMove(6, 2, 4, 2, MoveType.Default);
+                if (TheEngine.KingInCheck(opponentColor, TheEngine.GenerateMoves(turnColor)))
+                {
+                    // Soundeffekt, wenn König in Schach gesetzt wird
+                    SFXcheck.Play();
+                }
+                else if (pieceTaken)
+                {
+                    // Soundeffekt, wenn Figur geschlagen wird
+                    SFXpieceTaken.Play();
+                }
+                else
+                {
+                    // Sonst anderer Soundeffekt
+                    SFXmoveMade.Play();
+                }
 
                 if (turnColor == PieceColor.Black)
                 {
                     TheEngine.IncrementTurncounter();
                 }
+
                 // Die Engine serialisiert die Position und daraus wird das GUI gebildet
                 UI.PositionFromFEN(TheEngine.FromPositionCreateFEN(), playerColor);
                 // Zusätzlich wird das Brett in der Konsole ausgegeben.
                 TheEngine.GetTheBoard();
 
-                int gameStatus = TheEngine.CheckGameOver();
+                int gameStatus = TheEngine.CheckGameOver(TheEngine.FromPositionCreateFEN());
 
                 Console.WriteLine(gameStatus);
 
@@ -292,8 +329,8 @@ namespace Chess
                         ShowDialog("Remis durch Patt", "Ergebnis: 1/2 - 1/2");
                         break;
                 }
-                
-            }           
+
+            }
         }
 
         public static void ShowDialog(string text, string caption)

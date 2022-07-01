@@ -19,7 +19,6 @@ namespace Chess_UI
 
         // PERFT siehe https://www.chessprogramming.org/Perft_Results
         // PERFT 3: 97898 statt 97862 (Stockfish) -> Bauer bedroht Feld, durch das König bei Rochade zieht
-        // Bug gefixt!
         // static readonly string FEN = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
 
         // static readonly string FEN = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/P1N2Q2/1PPBBPpP/R3K2R w KQkq - 0 1";
@@ -35,6 +34,10 @@ namespace Chess_UI
 
         // Test für Schachmatt
         // static readonly string FEN = "r2q4/8/8/8/8/8/8/4K3 w - - 0 1";
+        // static readonly string FEN = "rk6/ppp4p/6p1/5p2/8/1P1R1NP1/PBPPPPBP/1K6 w - - 0 1";
+        // static readonly string FEN = "1k6/ppp5/8/8/3r4/7R/4r3/1K6 w - - 0 1";
+        
+
 
         // Test für Patt
         // static readonly string FEN = "1k6/3R4/8/5Q2/8/2R5/8/4K3 w - - 0 1"; 
@@ -42,7 +45,6 @@ namespace Chess_UI
         // Tests für Rochade
         // PERFT 4: 1288070 statt 1288065 (Stockfish)
         // static readonly string FEN = "r2qk2r/8/8/8/8/8/8/R2QK2R w KQkq - 0 1"; // alle vier Möglichkeiten
-        // Bug gefixt! Rochard nicht korrekt illegal erklärt nachdem Turm geschlagen wurde
 
         // static readonly string FEN = "r3k2r/8/8/8/8/8/8/R3K2R w - - 0 1"; // selbe Position, aber Rochaden nicht mehr erlaubt
         // static readonly string FEN = "4k2r/6r1/8/8/8/8/3R4/R3K3 w Qk - 0 1"; // weiß lange Rochade, schwarz kurze Rochade
@@ -415,23 +417,23 @@ namespace Chess_UI
                 TheBoard.blackCastlingLongPossible = false;
                 TheBoard.blackCastlingShortPossible = false;
             }
-            // Weißer Turm (queenside) wird bewegt/geschlagen -> Weiß verliert lange R.
-            if ((startX == 0 && startY == 0) || (endX == 0 && endY == 0))
+            // Weißer Turm (queenside) wird bewegt -> Weiß verliert lange R.
+            else if (startX == 0 && startY == 0)
             {
                 TheBoard.whiteCastlingLongPossible = false;
             }
-            // Weißer Turm (kingside) wird bewegt/geschlagen -> Weiß verliert kurze R.
-            if ((startX == 0 && startY == 7) || (endX == 0 && endY == 7))
+            // Weißer Turm (kingside) wird bewegt -> Weiß verliert kurze R.
+            else if (startX == 0 && startY == 7)
             {
                 TheBoard.whiteCastlingShortPossible = false;
             }
-            // Schwarzer Turm (queenside) wird bewegt/geschlagen -> Schwarz verliert lange R.
-            if ((startX == 7 && startY == 0) || (endX == 7 && endY == 0))
+            // Schwarzer Turm (queenside) wird bewegt -> Schwarz verliert lange R.
+            else if (startX == 7 && startY == 0)
             {
                 TheBoard.blackCastlingLongPossible = false;
             }
-            // Schwarzer Turm (kingside) wird bewegt/geschlagen -> Schwarz verliert kurze R.
-            if ((startX == 7 && startY == 7) || (endX == 7 && endY == 7))
+            // Schwarzer Turm (kingside) wird bewegt -> Schwarz verliert kurze R.
+            else if (startX == 7 && startY == 7)
             {
                 TheBoard.blackCastlingShortPossible = false;
             }
@@ -565,8 +567,6 @@ namespace Chess_UI
                 Console.WriteLine("");
             }
             Console.WriteLine("");
-                        Console.WriteLine(B.blackCastlingLongPossible + " " + B.blackCastlingShortPossible + " " + B.whiteCastlingLongPossible + " "  + B.whiteCastlingShortPossible);
-
         }
 
         public List<Move> movesBothColors;
@@ -594,12 +594,9 @@ namespace Chess_UI
                 }
             }
 
-            // Illegale Rochade Züge entfernen
             foreach (Move move in movesBothColors.ToList())
             {
-                // Move Koordinaten
                 int startx, starty, endx, endy;
-                int endyCastling = 0;
                 startx = move.StartSquare.X;
                 starty = move.StartSquare.Y;
                 endx = move.EndSquare.X;
@@ -617,24 +614,16 @@ namespace Chess_UI
                                     movesBothColors.Remove(move);
                                     continue;
                                 }
-                                else if(endy == 2)
+                                int endyCastling;
+                                if (endy == 2)
                                 {
-                                    if ((TheBoard.Squares[1, 2].Type == PieceType.Pawn && TheBoard.Squares[1, 2].Color == PieceColor.Black) || (TheBoard.Squares[1, 4].Type == PieceType.Pawn && TheBoard.Squares[1, 4].Color == PieceColor.Black))
-                                    {
-                                        movesBothColors.Remove(move);
-                                        continue;
-                                    }
                                     endyCastling = 3;
                                 }
-                                else if (endy == 6)
+                                else
                                 {
-                                    if ((TheBoard.Squares[1, 4].Type == PieceType.Pawn && TheBoard.Squares[1, 4].Color == PieceColor.Black) || (TheBoard.Squares[1, 6].Type == PieceType.Pawn && TheBoard.Squares[1, 6].Color == PieceColor.Black))
-                                    {
-                                        movesBothColors.Remove(move);
-                                        continue;
-                                    }
                                     endyCastling = 5;
                                 }
+
                                 foreach (Move move1 in movesBothColors)
                                 {
                                     if (endyCastling == move1.EndSquare.Y && 0 == move1.EndSquare.X)
@@ -655,35 +644,25 @@ namespace Chess_UI
                         {
                             if (endx == 7 && (endy == 2 || endy == 6))
                             {
-
                                 if (KingInCheck(PieceColor.Black, movesBothColors))
                                 {
                                     movesBothColors.Remove(move);
                                     continue;
                                 }
-                                else if (endy == 2)
-                                {
-                                    if ((TheBoard.Squares[6, 2].Type == PieceType.Pawn && TheBoard.Squares[6, 2].Color == PieceColor.White) || (TheBoard.Squares[6, 4].Type == PieceType.Pawn && TheBoard.Squares[6, 4].Color == PieceColor.White))
-                                    {
-                                        movesBothColors.Remove(move);
-                                        continue;
-                                    }
-                                    endyCastling = 3;
-                                }
-                                else if (endy == 6)
-                                {
-                                    if ((TheBoard.Squares[6, 4].Type == PieceType.Pawn && TheBoard.Squares[6, 4].Color == PieceColor.White) || (TheBoard.Squares[6, 6].Type == PieceType.Pawn && TheBoard.Squares[6, 6].Color == PieceColor.White))
-                                    {
-                                        movesBothColors.Remove(move);
-                                        continue;
-                                    }
-                                    endyCastling = 5;
-                                }
 
+                                int endychastling;
+                                if (endy == 2)
+                                {
+                                    endychastling = 3;
+                                }
+                                else
+                                {
+                                    endychastling = 5;
+                                }
 
                                 foreach (Move move1 in movesBothColors)
                                 {
-                                    if (endyCastling == move1.EndSquare.Y && 7 == move1.EndSquare.X)
+                                    if (endychastling == move1.EndSquare.Y && 7 == move1.EndSquare.X)
                                     {
                                         if (TheBoard.Squares[startx, starty].Color != TheBoard.Squares[move1.StartSquare.X, move1.StartSquare.Y].Color)
                                         {
@@ -748,6 +727,16 @@ namespace Chess_UI
             }
 
             return movesPlayerColor;
+        }
+        // Aufruf mit expliziter Farbe; kann verwendet werden, um Züge zu erhalten, als ob tempcolor gerade am Zug ist
+        public List<Move> GenerateMoves(PieceColor tempcolor)
+        {
+            List<Move> result;
+            PieceColor color = GetTurnColor();
+            TheBoard.turnColor = tempcolor;
+            result = GenerateMoves();
+            TheBoard.turnColor = color;
+            return result;
         }
 
         public void GeneratePieceMove(Point start, PieceColor color, PieceType type, List<Move> moves)
@@ -1066,10 +1055,10 @@ namespace Chess_UI
             }
         }
 
-        public void UpdateChecksAndGameOver()
+        public void UpdateChecksAndGameOver(String FEN)
         {
-            List<Move> moves = new List<Move>();
-            moves = GenerateMoves();
+            setBoardFromFEN(FEN);
+            List<Move> moves = GenerateMoves();
 
             if(KingInCheck(PieceColor.White, moves))
             {
@@ -1080,12 +1069,20 @@ namespace Chess_UI
                 TheBoard.blackInCheck = true;
             }
 
-            if (!LegalMovesExist(moves))
+            if (moves.Count == 0)
             {
-                PieceColor opponentColor = (TheBoard.turnColor == PieceColor.White) ? PieceColor.Black : PieceColor.White;
-
+                PieceColor turnColor = TheBoard.turnColor;
+                PieceColor opponentColor = (turnColor == PieceColor.White) ? PieceColor.Black : PieceColor.White;
+                TheBoard.turnColor = opponentColor;
+                moves = GenerateMoves();
+                /*
+                foreach(Move move in moves)
+                {
+                    Console.WriteLine(move.StartSquare.X + " " + move.StartSquare.Y + " " + move.EndSquare.X + " " + move.EndSquare.Y);
+                }
+                */
                 // Gegner ist im Schach und hat keinen legalen Zug -> Schachmatt
-                if (KingInCheck(opponentColor, moves))
+                if (KingInCheck(turnColor, moves))
                 {
                     if (TheBoard.turnColor != PieceColor.White)
                     {
@@ -1104,9 +1101,9 @@ namespace Chess_UI
             }
         }
 
-        public int CheckGameOver()
+        public int CheckGameOver(String FEN)
         {
-            UpdateChecksAndGameOver();
+            UpdateChecksAndGameOver(FEN);
             if (TheBoard.whiteLost)
             {
                 return 0;

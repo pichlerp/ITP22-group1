@@ -67,9 +67,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Square.cs" />
     <Compile Include="UIdebug.cs" />
-    <EmbeddedResource Include="GameWindow.resx">
-      <DependentUpon>GameWindow.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -131,6 +128,18 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Images\Rw.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Sounds\boing.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Sounds\move_regular.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Sounds\move_check.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Sounds\move_piecetaken.wav" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
