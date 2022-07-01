@@ -1,7 +1,7 @@
 ﻿
 namespace Chess
 {
-    partial class GameWindow
+    partial class Form1
     {
         /// <summary>
         /// Required designer variable.
@@ -29,20 +29,10 @@ namespace Chess
         /// </summary>
         private void InitializeComponent()
         {
-            this.SuspendLayout();
-            // 
-            // GameWindow
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.components = new System.ComponentModel.Container();
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.AutoSize = true;
-            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Name = "GameWindow";
             this.Text = "Form1";
-            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
-            this.ResumeLayout(false);
-
         }
 
         #endregion
