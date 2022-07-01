@@ -36,7 +36,6 @@ namespace Chess_UI
         public Board(string FEN)
         {
             PositionFromFEN(FEN);
-            score = evalBoard();
         }
         public int getScore()
         {

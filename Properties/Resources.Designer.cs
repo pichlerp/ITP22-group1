@@ -63,9 +63,27 @@ namespace Chess_UI.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
         /// </summary>
-        internal static System.IO.UnmanagedMemoryStream boing {
+        internal static System.IO.UnmanagedMemoryStream move_check {
             get {
-                return ResourceManager.GetStream("boing", resourceCulture);
+                return ResourceManager.GetStream("move_check", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream move_piecetaken {
+            get {
+                return ResourceManager.GetStream("move_piecetaken", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream move_regular {
+            get {
+                return ResourceManager.GetStream("move_regular", resourceCulture);
             }
         }
     }

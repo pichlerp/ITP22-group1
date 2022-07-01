@@ -33,9 +33,11 @@ namespace Chess_UI
         // static readonly string FEN = "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8";       
 
         // Test für Schachmatt
-        //static readonly string FEN = "r2q4/8/8/8/8/8/8/4K3 w - - 0 1";
-        //static readonly string FEN = "rk6/ppp4p/6p1/5p2/8/1P1R1NP1/PBPPPPBP/1K6 w - - 0 1";
+        // static readonly string FEN = "r2q4/8/8/8/8/8/8/4K3 w - - 0 1";
+        // static readonly string FEN = "rk6/ppp4p/6p1/5p2/8/1P1R1NP1/PBPPPPBP/1K6 w - - 0 1";
+        // static readonly string FEN = "1k6/ppp5/8/8/3r4/7R/4r3/1K6 w - - 0 1";
         
+
 
         // Test für Patt
         // static readonly string FEN = "1k6/3R4/8/5Q2/8/2R5/8/4K3 w - - 0 1"; 
@@ -725,6 +727,16 @@ namespace Chess_UI
             }
 
             return movesPlayerColor;
+        }
+        // Aufruf mit expliziter Farbe; kann verwendet werden, um Züge zu erhalten, als ob tempcolor gerade am Zug ist
+        public List<Move> GenerateMoves(PieceColor tempcolor)
+        {
+            List<Move> result;
+            PieceColor color = GetTurnColor();
+            TheBoard.turnColor = tempcolor;
+            result = GenerateMoves();
+            TheBoard.turnColor = color;
+            return result;
         }
 
         public void GeneratePieceMove(Point start, PieceColor color, PieceType type, List<Move> moves)

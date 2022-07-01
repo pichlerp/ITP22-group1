@@ -132,5 +132,14 @@
   <ItemGroup>
     <None Include="Sounds\boing.wav" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Sounds\move_regular.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Sounds\move_check.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Sounds\move_piecetaken.wav" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
