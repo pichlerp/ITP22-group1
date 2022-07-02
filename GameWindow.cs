@@ -274,6 +274,12 @@ namespace Chess
                     ShowDialog("Remis durch Patt", "Ergebnis: 1/2 - 1/2");
                     break;
             }
+            if(TheEngine.MovesSinceBeaten() == 150)
+            {
+                gameOver = true;
+                ShowDialog("Remis durch 75-Zug-Regel", "Ergebnis: 1/2 - 1/2");
+
+            }
 
         }
         private void CheckIfAIShouldMove(object Sender, EventArgs e)
