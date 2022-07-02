@@ -88,6 +88,8 @@ namespace Chess_UI
                     return true;
                 }
             }
+            
+            TheBoard.falseFigure();
             return false;
         }
 
@@ -109,6 +111,7 @@ namespace Chess_UI
             PieceColor color = TheBoard.Squares[rank, file].Color;
             if (color == TheBoard.turnColor)
             {
+                TheBoard.falseFigure();
                 return true;
             }
             return false;
@@ -127,6 +130,7 @@ namespace Chess_UI
         internal string FromPositionCreateFEN()
         {
             // 1. Substring: Position der Figuren 
+            TheBoard.eCount = 0;
             string fen = "";
             for (int i = 7; i >= 0; i--)
             {
@@ -137,6 +141,7 @@ namespace Chess_UI
                     while (TheBoard.Squares[i, j].Color == PieceColor.Empty)
                     {
                         emptyCounter++;
+                        TheBoard.EmptyCountIncrease();
                         if (j == 7)
                         {
                             break;
@@ -221,6 +226,11 @@ namespace Chess_UI
                 char file = (char)(TheBoard.enPassantPosition.Y + 49);
                 fen += rank.ToString() + file.ToString();
             }
+
+            if(TheBoard.eCount != TheBoard.getECountPast())
+            {
+                TheBoard.EmptyCountSave();
+            }
             // 5. Substring: Anzahl an Zügen seit Schlagen oder Bauernzug
             fen += (" " + TheBoard.halfmoveClock.ToString());
             // 6. Substring: Nummer des aktuellen Zugs
@@ -242,6 +252,7 @@ namespace Chess_UI
         {
             if (moves.Count == 0)
             {
+                TheBoard.falseFigure();
                 return false;
             }
             return true;
@@ -272,6 +283,12 @@ namespace Chess_UI
             }
 
             return false;
+        }
+
+        public int MovesSinceBeaten()
+        {
+            int MCSB = TheBoard.MCSB1();
+            return MCSB;
         }
 
         internal void MakeMove(int startX, int startY, int endX, int endY, MoveType Type)
@@ -459,6 +476,10 @@ namespace Chess_UI
         // Ausgabe der Spielsituation an der Konsole
         public static void PrintBoard(Board B)
         {
+            if(B.FieldComprasion() == false)
+            {
+                B.MoveCount();
+            }
             Console.WriteLine("");
             Console.Write("   ");
             for (int i = 7; i >= 0; i--)
@@ -508,6 +529,7 @@ namespace Chess_UI
                     }
                     if (B.Squares[i, j].Color != PieceColor.Empty)
                     {
+                        B.Field[i,j] = B.Squares[i, j].Type;
                         if (B.Squares[i, j].Color == PieceColor.White)
                         {
                             switch (B.Squares[i, j].Type)
@@ -560,6 +582,7 @@ namespace Chess_UI
                     else
                     {
                         Console.Write("- ");
+                        B.Field[i,j] = PieceType.Empty;
                     }
                 }
                 Console.WriteLine("");
