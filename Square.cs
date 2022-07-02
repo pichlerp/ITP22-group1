@@ -20,7 +20,8 @@ namespace Chess_UI
         Rook,
         Bishop,
         Knight,
-        Pawn
+        Pawn,
+        Empty
     }
 
     public class Square
@@ -28,9 +29,6 @@ namespace Chess_UI
         public int RowNum { get; set; }
 
         public int ColNum { get; set; }
-
-        // Wenn ein Bauer noch nicht bewegt wurde, dann kann dieser um zwei Felder bewegt werden. Das leere Feld, das dabei übersprungen wird, ist jetzt ein gültiges Ziel für gegnerische Bauern, als ob der Bauer dort stünde.
-        public bool EnPassantPossible { get; set; }
 
         public PieceColor Color;
 
@@ -40,7 +38,6 @@ namespace Chess_UI
         {
             RowNum = row;
             ColNum = col;
-            EnPassantPossible = false;
             Color = PieceColor.Empty;
         }
     }
