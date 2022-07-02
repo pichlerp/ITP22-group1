@@ -30,9 +30,67 @@ namespace Chess_UI
         public bool whiteLost = false;
         public bool blackLost = false;
         public bool stalemate = false;
+        public static int moveCount;
+        public int eCount;
+        public static int eCountPast = 32;
+        public static int moveCountSinceBeaten = 0;
+
+        public Chess_UI.PieceType[,] Field = new Chess_UI.PieceType[8,8];
+
+        public int MCSB1()
+        {
+            return moveCountSinceBeaten;
+        }
+
+        public int getECountPast()
+        {
+            return eCountPast;
+        }
+
+        public void falseFigure()
+        {
+            moveCount--;
+            moveCountSinceBeaten--;
+        }
+
+        public void EmptyCountIncrease()
+        {
+            eCount++;
+        }
+
+        public void EmptyCountSave()
+        {
+            eCountPast = eCount;
+            moveCountSinceBeaten = 0;
+
+        }
+
+        public bool FieldComprasion()
+        {
+            for (int i = 7; i >= 0; i--)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    if (Field[i,j].ToString() != Squares[i,j].ToString())
+	                {
+                        //moveCount++;
+                        return false;
+	                }
+                }
+            }
+            return true;
+        }
 
         public Square[,] Squares { get; set; }
 
+        public void MoveCount()
+        {
+            //int MoveCount1 = int.Parse(this.moveCount.ToString());
+            moveCount++;
+            moveCountSinceBeaten++;
+            //turnCounter++;
+            Console.WriteLine($"Counter: {moveCount}, {eCountPast}, {moveCountSinceBeaten}");
+        }
         public Board(string FEN)
         {
             PositionFromFEN(FEN);
@@ -151,10 +209,10 @@ namespace Chess_UI
                 enPassantPosition.Y = col;
             }
             // 5. Substring: Anzahl an Zügen seit Schlagen oder Bauernzug
-            string fenHalfmoveClock = fen.Split(' ')[4];
+            string fenHalfmoveClock = moveCountSinceBeaten.ToString();
             this.halfmoveClock = Convert.ToInt32(fenHalfmoveClock);
             // 6. Substring: Nummer des aktuellen Zugs
-            string fenTurnCounter = fen.Split(' ')[5];
+            string fenTurnCounter = moveCount.ToString();
             this.turnCounter = Convert.ToInt32(fenTurnCounter);
         }
 
