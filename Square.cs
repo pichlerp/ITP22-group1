@@ -20,7 +20,8 @@ namespace Chess_UI
         Rook,
         Bishop,
         Knight,
-        Pawn
+        Pawn,
+        Empty
     }
 
     public class Square
