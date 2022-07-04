@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.32228.343
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32616.157
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chess UI", "Chess UI.csproj", "{D84802A9-2DA2-4E8B-AA06-0B3DEA1B7724}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ITP-Schach-mit-KI", "ITP-Schach-mit-KI.csproj", "{D84802A9-2DA2-4E8B-AA06-0B3DEA1B7724}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

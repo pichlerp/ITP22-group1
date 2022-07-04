@@ -232,7 +232,7 @@ namespace Chess_UI
             ClearBoard();
             int file = 0;
             int rank = 7;
-            string picturePath;
+            Image picture = null;
             string piecePlacement = fen.Split(' ')[0];
             int counter = 0;
             foreach (char symbol in piecePlacement)
@@ -253,43 +253,43 @@ namespace Chess_UI
                         switch (fen[counter])
                         {
                             case 'k':
-                                picturePath = "/Images/Gb.png";
+                                picture = Chess_UI.Properties.Resources.bk;
                                 break;
                             case 'K':
-                                picturePath = "/Images/Gw.png";
+                                picture = Chess_UI.Properties.Resources.wk;
                                 break;
                             case 'q':
-                                picturePath = "/Images/Qb.png";
+                                picture = Chess_UI.Properties.Resources.bq;
                                 break;
                             case 'Q':
-                                picturePath = "/Images/Qw.png";
+                                picture = Chess_UI.Properties.Resources.wq;
                                 break;
                             case 'r':
-                                picturePath = "/Images/Rb.png";
+                                picture = Chess_UI.Properties.Resources.br;
                                 break;
                             case 'R':
-                                picturePath = "/Images/Rw.png";
+                                picture = Chess_UI.Properties.Resources.wr;
                                 break;
                             case 'n':
-                                picturePath = "/Images/Kb.png";
+                                picture = Chess_UI.Properties.Resources.bn;
                                 break;
                             case 'N':
-                                picturePath = "/Images/Kw.png";
+                                picture = Chess_UI.Properties.Resources.wn;
                                 break;
                             case 'b':
-                                picturePath = "/Images/Bb.png";
+                                picture = Chess_UI.Properties.Resources.bb;
                                 break;
                             case 'B':
-                                picturePath = "/Images/Bw.png";
+                                picture = Chess_UI.Properties.Resources.wb;
                                 break;
                             case 'p':
-                                picturePath = "/Images/Pb.png";
+                                picture = Chess_UI.Properties.Resources.bp;
                                 break;
                             case 'P':
-                                picturePath = "/Images/Pw.png";
+                                picture = Chess_UI.Properties.Resources.wp;
                                 break;
                             default:
-                                picturePath = "/Images/Gw.png";
+                                picture = Chess_UI.Properties.Resources.wp;
                                 break;
                         }
                         int newrank;
@@ -299,14 +299,14 @@ namespace Chess_UI
                             // Darstellung für Weiß
                             newrank = file;
                             newfile = 7 - rank;
-                            piece_imageboxes[newfile, newrank].Image = resizeImage(Image.FromFile(projectDirectory + picturePath), width / 8, height / 8);
+                            piece_imageboxes[newfile, newrank].Image = resizeImage(picture, width / 8, height / 8);
                         }
                         else
                         {
                             // Darstellung für Schwarz
                             newrank = 7 - file;
                             newfile = rank;
-                            piece_imageboxes[newfile, newrank].Image = resizeImage(Image.FromFile(projectDirectory + picturePath), width / 8, height / 8);
+                            piece_imageboxes[newfile, newrank].Image = resizeImage(picture, width / 8, height / 8);
                         }
                         file++;
                     }
