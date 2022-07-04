@@ -64,6 +64,11 @@ namespace Chess
                 ai = new AI(Chess_UI.PieceColor.Black);
                 AIcolor = PieceColor.Black;
             }
+            else
+            {
+                AIcolor = PieceColor.Empty;
+                timer.Stop();
+            }
         }
 
         private void MenuStartButtonPressB(object sender, EventArgs e)
@@ -75,6 +80,11 @@ namespace Chess
             {
                 ai = new AI(Chess_UI.PieceColor.White);
                 AIcolor = PieceColor.White;
+            }
+            else
+            {
+                AIcolor = PieceColor.Empty;
+                timer.Stop();
             }
         }
         public void initGame(Chess_UI.PieceColor color)
@@ -96,6 +106,10 @@ namespace Chess
             TheEngine.setBoardFromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
             gameOver = false;
             Menu.ShowMenu();
+            Menu.play_ai = false;
+            Menu.play_ai_bt.Text = "Spiel gegen KI";
+            Menu.play_ai_bt.Enabled = true;
+
         }
 
         int selectedY, selectedX;
@@ -299,7 +313,7 @@ namespace Chess
                 // Die Engine serialisiert die Position und daraus wird das GUI gebildet
                 UI.PositionFromFEN(TheEngine.FromPositionCreateFEN(), playerColor);
                 // Zusätzlich wird das Brett in der Konsole ausgegeben.
-                //TheEngine.GetTheBoard();
+                TheEngine.GetTheBoard();
 
                 int gameStatus = TheEngine.CheckGameOver(TheEngine.FromPositionCreateFEN());
 

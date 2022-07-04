@@ -22,7 +22,7 @@ namespace Chess
         EventHandler buttonPressW;
         EventHandler buttonPressB;
         Form form;
-        Button play_ai_bt;
+        public Button play_ai_bt;
         Button play_buttonW;
         Button play_buttonB;
         Button exit_button;
