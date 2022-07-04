@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using System.Drawing.Text;
 using System.IO;
+using Chess_UI;
 
 namespace Chess
 {
@@ -20,10 +21,13 @@ namespace Chess
         PictureBox menu_box;
         EventHandler buttonPressW;
         EventHandler buttonPressB;
-        Button play_ai_bt;
         Form form;
+        Button play_ai_bt;
         Button play_buttonW;
         Button play_buttonB;
+        Button exit_button;
+        Button perft_button;
+        Label credits_label;
         Label main_menu_label;
 
         public ChessMenu(Form in_form, EventHandler playW, EventHandler playB)
@@ -49,6 +53,16 @@ namespace Chess
             main_menu_label.AutoSize = false;
             main_menu_label.TextAlign = ContentAlignment.MiddleCenter;
             main_menu_label.Location = new Point(menu_box_width / 2 - main_menu_label.Size.Width / 2, 30);
+            credits_label = new Label();
+            form.Controls.Add(credits_label);
+            credits_label.Parent = menu_box;
+            credits_label.Text = "Peter Pichler, Gabriel Helm, Gerrit Kreuzer und Pavels Tuliss";
+            credits_label.Font = new Font("Candara Bold", 8, FontStyle.Regular);
+            credits_label.Size = new Size(400, 20);
+            credits_label.ForeColor = Color.FromArgb(223, 223, 223);
+            credits_label.AutoSize = false;
+            credits_label.TextAlign = ContentAlignment.MiddleCenter;
+            credits_label.Location = new Point(menu_box_width / 2 - main_menu_label.Size.Width / 2, 470);
 
             play_buttonW = new Button();
             form.Controls.Add(play_buttonW);
@@ -82,6 +96,32 @@ namespace Chess
             play_ai_bt.Font = new Font("Candara Bold", 16, FontStyle.Regular);
             play_ai_bt.ForeColor = Color.FromArgb(223, 223, 223);
             play_ai_bt.FlatStyle = FlatStyle.Flat;
+
+            exit_button = new Button();
+            form.Controls.Add(exit_button);
+            exit_button.Click += exitClick;
+            exit_button.Size = new Size(60, 40);
+            exit_button.Parent = menu_box;
+            exit_button.Location = new Point(menu_box_width - exit_button.Width - 10, menu_box_height - exit_button.Height - 10);
+            exit_button.Text = "Exit";
+            exit_button.Font = new Font("Candara Bold", 12, FontStyle.Regular);
+            exit_button.ForeColor = Color.FromArgb(223, 223, 223);
+            exit_button.FlatStyle = FlatStyle.Flat;
+
+            perft_button = new Button();
+            form.Controls.Add(perft_button);
+            perft_button.Click += perftClick;
+            perft_button.Size = new Size(75, 40);
+            perft_button.Parent = menu_box;
+            perft_button.Location = new Point(10, menu_box_height - exit_button.Height - 10);
+            perft_button.Text = "PERFT";
+            perft_button.Font = new Font("Candara Bold", 12, FontStyle.Regular);
+            perft_button.ForeColor = Color.FromArgb(223, 223, 223);
+            perft_button.FlatStyle = FlatStyle.Flat;
+        }
+        public void exitClick(object sender, EventArgs e)
+        {
+            System.Windows.Forms.Application.Exit();
         }
         public void playAI(object sender, EventArgs e)
         {
@@ -96,6 +136,34 @@ namespace Chess
         public void ShowMenu()
         {
             form.Controls.Add(menu_box);
+        }
+        public void perftClick(object sender, EventArgs e)
+        {
+            MessageBox.Show("Bitte zur Konsole wechseln!\nMehr Informationen zu PERFT in Benutzeranleitung.");
+            Perft perft = new Perft();
+            string FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+            Console.WriteLine("PERFormance Test:");
+            while (true)
+            {
+                Console.WriteLine("1. Start PERFT\n2. Position ändern\n3. Beenden");
+                string s = Console.ReadLine();
+                if (s == "1")
+                {
+                    Console.Write("Tiefe eingeben: ");
+                    int input = Convert.ToInt32(Console.ReadLine());
+                    perft.countMovesToDepth(input, FEN);
+                }
+                if (s == "2")
+                {
+                    Console.Write("FEN der gewünschten Position eingeben: ");
+                    FEN = Console.ReadLine();
+                }
+                if (s == "3")
+                {
+                    Console.WriteLine("Bitte wieder zum Fenster wechseln.");
+                    break;
+                }
+            }
         }
     }
 }

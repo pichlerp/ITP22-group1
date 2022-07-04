@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace Chess_UI
 {
-
     public enum PieceColor
     {
         Empty,
@@ -20,8 +19,7 @@ namespace Chess_UI
         Rook,
         Bishop,
         Knight,
-        Pawn,
-        Empty
+        Pawn
     }
 
     public class Square

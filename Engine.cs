@@ -9,9 +9,10 @@ namespace Chess_UI
 {
     class Engine
     {
-        //bool locked = false;
+        public char promotionoption = 'x';
 
         public List<Move> movesPlayerColor;
+
         // Spielaufbau - online Editor mit FEN https://lichess.org/editor
 
         // Startposition
@@ -37,7 +38,10 @@ namespace Chess_UI
         // static readonly string FEN = "r2q4/8/8/8/8/8/8/4K3 w - - 0 1";
 
         // Test für Patt
-        // static readonly string FEN = "1k6/3R4/8/5Q2/8/2R5/8/4K3 w - - 0 1"; 
+        // static readonly string FEN = "1k6/3R4/8/5Q2/8/2R5/8/4K3 w - - 0 1";
+
+        // Test für 75-Zug-Regel
+        // static readonly string FEN = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 145 1";
 
         // Tests für Rochade
         // PERFT 4: 1288070 statt 1288065 (Stockfish)
@@ -68,17 +72,6 @@ namespace Chess_UI
             TheBoard = new Board(fen);
         }
 
-        /*
-        public void lockMoves()
-        {
-            locked = true;
-        }
-        public void unlockMoves()
-        {
-            locked = false;
-        }
-        */
-
         internal bool IsValidMove(int startX, int startY, int endX, int endY)
         {
             foreach (Move move in movesBothColors)
@@ -88,8 +81,6 @@ namespace Chess_UI
                     return true;
                 }
             }
-            
-            TheBoard.falseFigure();
             return false;
         }
 
@@ -111,7 +102,6 @@ namespace Chess_UI
             PieceColor color = TheBoard.Squares[rank, file].Color;
             if (color == TheBoard.turnColor)
             {
-                TheBoard.falseFigure();
                 return true;
             }
             return false;
@@ -130,7 +120,6 @@ namespace Chess_UI
         internal string FromPositionCreateFEN()
         {
             // 1. Substring: Position der Figuren 
-            TheBoard.eCount = 0;
             string fen = "";
             for (int i = 7; i >= 0; i--)
             {
@@ -141,7 +130,6 @@ namespace Chess_UI
                     while (TheBoard.Squares[i, j].Color == PieceColor.Empty)
                     {
                         emptyCounter++;
-                        TheBoard.EmptyCountIncrease();
                         if (j == 7)
                         {
                             break;
@@ -226,16 +214,10 @@ namespace Chess_UI
                 char file = (char)(TheBoard.enPassantPosition.Y + 49);
                 fen += rank.ToString() + file.ToString();
             }
-
-            if(TheBoard.eCount != TheBoard.getECountPast())
-            {
-                TheBoard.EmptyCountSave();
-            }
             // 5. Substring: Anzahl an Zügen seit Schlagen oder Bauernzug
             fen += (" " + TheBoard.halfmoveClock.ToString());
             // 6. Substring: Nummer des aktuellen Zugs
             fen += (" " + TheBoard.turnCounter.ToString());
-            //Console.WriteLine("Position converted to " + fen);
             return fen;
         }
 
@@ -247,15 +229,6 @@ namespace Chess_UI
         public void MakeMove(Move move)
         {
             MakeMove(move.StartSquare.X, move.StartSquare.Y, move.EndSquare.X, move.EndSquare.Y, move.MoveType);
-        }
-        internal bool LegalMovesExist(List<Move> moves)
-        {
-            if (moves.Count == 0)
-            {
-                TheBoard.falseFigure();
-                return false;
-            }
-            return true;
         }
 
         internal bool KingInCheck(PieceColor opponentColor, List<Move> moves)
@@ -283,12 +256,6 @@ namespace Chess_UI
             }
 
             return false;
-        }
-
-        public int MovesSinceBeaten()
-        {
-            int MCSB = TheBoard.MCSB1();
-            return MCSB;
         }
 
         internal void MakeMove(int startX, int startY, int endX, int endY, MoveType Type)
@@ -333,26 +300,20 @@ namespace Chess_UI
             if (TheBoard.Squares[startX, startY].Type == PieceType.Pawn && (endX == 0 || endX == 7))
             {
                 promotion = true;
-                string input;
+                char input;
                 // Wenn kein spezieller MoveType angegeben wurde, dann handelt es sich um einen manuellen Zug und dementsprechend wird nachgefragt
                 if (Type == MoveType.Default)
                 {
-                    Console.WriteLine("Bauer wird befördert. Figur auswählen (q, r, b, n): ");
-                    input = Console.ReadLine();
-                    while (input == "" || !(input[0] == 'q' || input[0] == 'r' || input[0] == 'b' || input[0] == 'n'))
-                    {
-                        Console.WriteLine("Eingabe ungültig. Figur auswählen (q, r, b, n): ");
-                        input = Console.ReadLine();
-                    }
-                    if (input[0] == 'q')
+                    input = promotionoption;
+                    if (input == 'q')
                     {
                         TheBoard.Squares[endX, endY].Type = PieceType.Queen;
                     }
-                    else if (input[0] == 'r')
+                    else if (input == 'r')
                     {
                         TheBoard.Squares[endX, endY].Type = PieceType.Rook;
                     }
-                    else if (input[0] == 'b')
+                    else if (input == 'b')
                     {
                         TheBoard.Squares[endX, endY].Type = PieceType.Bishop;
                     }
@@ -476,10 +437,6 @@ namespace Chess_UI
         // Ausgabe der Spielsituation an der Konsole
         public static void PrintBoard(Board B)
         {
-            if(B.FieldComprasion() == false)
-            {
-                B.MoveCount();
-            }
             Console.WriteLine("");
             Console.Write("   ");
             for (int i = 7; i >= 0; i--)
@@ -529,7 +486,6 @@ namespace Chess_UI
                     }
                     if (B.Squares[i, j].Color != PieceColor.Empty)
                     {
-                        B.Field[i,j] = B.Squares[i, j].Type;
                         if (B.Squares[i, j].Color == PieceColor.White)
                         {
                             switch (B.Squares[i, j].Type)
@@ -582,14 +538,11 @@ namespace Chess_UI
                     else
                     {
                         Console.Write("- ");
-                        B.Field[i,j] = PieceType.Empty;
                     }
                 }
                 Console.WriteLine("");
             }
             Console.WriteLine("");
-            Console.WriteLine(B.blackCastlingLongPossible + " " + B.blackCastlingShortPossible + " " + B.whiteCastlingLongPossible + " " + B.whiteCastlingShortPossible);
-
         }
 
         public List<Move> movesBothColors;
@@ -1105,7 +1058,7 @@ namespace Chess_UI
             setBoardFromFEN(FEN);
             List<Move> moves = GenerateMoves();
 
-            if(KingInCheck(PieceColor.White, moves))
+            if (KingInCheck(PieceColor.White, moves))
             {
                 TheBoard.whiteInCheck = true;
             }
@@ -1120,12 +1073,6 @@ namespace Chess_UI
                 PieceColor opponentColor = (turnColor == PieceColor.White) ? PieceColor.Black : PieceColor.White;
                 TheBoard.turnColor = opponentColor;
                 moves = GenerateMoves();
-                /*
-                foreach(Move move in moves)
-                {
-                    Console.WriteLine(move.StartSquare.X + " " + move.StartSquare.Y + " " + move.EndSquare.X + " " + move.EndSquare.Y);
-                }
-                */
                 // Gegner ist im Schach und hat keinen legalen Zug -> Schachmatt
                 if (KingInCheck(turnColor, moves))
                 {
@@ -1160,6 +1107,10 @@ namespace Chess_UI
             if (TheBoard.stalemate)
             {
                 return 2;
+            }
+            if (TheBoard.halfmoveClock >= 150)
+            {
+                return 3;
             }
             return -1;
         }

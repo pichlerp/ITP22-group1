@@ -14,21 +14,21 @@ namespace Chess
     {
         int form_width = 1000;
         int form_height = 1000;
-        Color backgroundcolor = Color.FromArgb(10, 10, 10); //Color.FromArgb(126, 128, 128);
+        Color backgroundcolor = Color.FromArgb(10, 10, 10);
         static ChessUI UI;
         bool playing_ai = false;
         PieceColor AIcolor = PieceColor.Empty;
         Chess_UI.PieceColor playerColor;
         new ChessMenu Menu;
-        static Chess_UI.Engine TheEngine = new Chess_UI.Engine();
+        static Chess_UI.Engine TheEngine;
+        InGameMenu InGameMenu;
+        Timer timer = new Timer();
         AI ai;
-        Perft perft = new Perft(ref TheEngine); // performance test, move path enumeration
 
+        // Soundeffekte
         System.Media.SoundPlayer SFXmoveMade = new System.Media.SoundPlayer(Chess_UI.Properties.Resources.move_regular);
         System.Media.SoundPlayer SFXcheck = new System.Media.SoundPlayer(Chess_UI.Properties.Resources.move_check);
         System.Media.SoundPlayer SFXpieceTaken = new System.Media.SoundPlayer(Chess_UI.Properties.Resources.move_piecetaken);
-
-
 
         public GameWindow()
         {
@@ -36,32 +36,8 @@ namespace Chess
             // Programmablauf fängt hier an
             InitializeForm();
 
-            Timer timer = new Timer();
             timer.Interval = 500;
             timer.Tick += new EventHandler(CheckIfAIShouldMove);
-            timer.Enabled = true;
-
-            Console.WriteLine("Enter number as depth for PERFT or 'x' to skip: ");
-            int depth;
-            string input = "";
-            while (input != "x")
-            {
-                input = Console.ReadLine();
-                if (input == "x")
-                {
-                    break;
-                }
-                while (!Int32.TryParse(input, out depth))
-                {
-                    input = Console.ReadLine();
-                    if (input == "x")
-                    {
-                        break;
-                    }
-                }
-                perft.countMovesToDepth(depth);
-            }
-
         }
 
         private void InitializeForm()
@@ -73,13 +49,6 @@ namespace Chess
             LoadMenu();
         }
 
-        /*
-        public void initAI(Chess_UI.PieceColor color)
-        {
-            ai = new AI(ref TheEngine, ref UI, color);
-        }
-        */
-
         private void LoadMenu()
         {
             Menu = new ChessMenu(this, MenuStartButtonPressW, MenuStartButtonPressB);
@@ -88,10 +57,7 @@ namespace Chess
         private void MenuStartButtonPressW(object sender, EventArgs e)
         {
             playerColor = Chess_UI.PieceColor.White;
-            Menu.HideMenu();
-            UI = new ChessUI(this, ClickHandler);
-            UI.PositionFromFEN(TheEngine.FromPositionCreateFEN(), playerColor);
-            playing_ai = Menu.play_ai;
+            initGame(Chess_UI.PieceColor.White);
 
             if (playing_ai)
             {
@@ -103,10 +69,7 @@ namespace Chess
         private void MenuStartButtonPressB(object sender, EventArgs e)
         {
             playerColor = Chess_UI.PieceColor.Black;
-            Menu.HideMenu();
-            UI = new ChessUI(this, ClickHandler);
-            UI.PositionFromFEN(TheEngine.FromPositionCreateFEN(), playerColor);
-            playing_ai = Menu.play_ai;
+            initGame(Chess_UI.PieceColor.Black);
 
             if (playing_ai)
             {
@@ -114,13 +77,25 @@ namespace Chess
                 AIcolor = PieceColor.White;
             }
         }
-
-        private void play_buttonW_Click(object sender, EventArgs e)
+        public void initGame(Chess_UI.PieceColor color)
         {
-            Console.WriteLine(sender);
+            TheEngine = new Chess_UI.Engine();
             Menu.HideMenu();
-            UI = new ChessUI(this, ClickHandler);
+            UI = new ChessUI(this, ClickHandler, color);
+            InGameMenu = new InGameMenu(ref UI, this, ref TheEngine);
+            InGameMenu.show();
             UI.PositionFromFEN(TheEngine.FromPositionCreateFEN(), playerColor);
+            playing_ai = Menu.play_ai;
+            timer.Enabled = true;
+        }
+
+        public void returnToMenu()
+        {
+            UI.Hide();
+            InGameMenu.hide();
+            TheEngine.setBoardFromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+            gameOver = false;
+            Menu.ShowMenu();
         }
 
         int selectedY, selectedX;
@@ -166,24 +141,14 @@ namespace Chess
                 {
                     UI.NextMoveMade();
 
-                    /*
-                    // ai macht zug
-                    if (turnColor == AIcolor)
+                    if (TheEngine.Board().Squares[selectedX, selectedY].Type == PieceType.Pawn && (x == 0 || x == 7))
                     {
-                        //ai.randomMove();
-                        //ai.makeMove();
-                        //String backup = TheEngine.FromPositionCreateFEN();
-                        Move AIMove = ai.AlphaBetaRoot(TheEngine, 2);
-                        //TheEngine.setBoardFromFEN(backup);
-                        TheEngine.MakeMove(AIMove.StartSquare.X, AIMove.StartSquare.Y, AIMove.EndSquare.X, AIMove.EndSquare.Y, MoveType.Default);
+                        InGameMenu.showPromotionMenu(selectedX, selectedY, x, y, turnColor);
+                        return;
                     }
-                    else
-                    {
-                        
-                    }
-                    */
 
                     bool pieceTaken = TheEngine.Board().Squares[x, y].Color != PieceColor.Empty;
+                    PieceType pieceType = TheEngine.Board().Squares[selectedX, selectedY].Type;
 
                     TheEngine.MakeMove(selectedX, selectedY, x, y, MoveType.Default);
 
@@ -208,17 +173,15 @@ namespace Chess
                         TheEngine.IncrementTurncounter();
                     }
 
-                    /* TODO: Check, ob Figur geschlagen, oder Bauer bewegt -> Halbzugzähler dementsprechend anpassen
-                    if (TheEngine.PieceTakenOrPawnMoved())
+                    // Check, ob Figur geschlagen, oder Bauer bewegt -> Halbzugzähler dementsprechend anpassen
+                    if (pieceTaken || pieceType == PieceType.Pawn)
                     {
-                        TheEngine.ResetHalfmoveclock();
+                        TheEngine.Board().halfmoveClock = 1;
                     }
                     else
                     {
-                        TheEngine.IncrementHalfmoveclock();
+                        TheEngine.Board().halfmoveClock++;
                     }
-                    */
-
                 }
                 else
                 {
@@ -252,10 +215,17 @@ namespace Chess
                     UI.ShowPossibleMoves(UI.TransformMovesBlack(possibleMoves));
                 }
             }
+            endOfMove(turnColor);
+        }
+        public void endOfMove(PieceColor turnColor)
+        {
             // Die Engine serialisiert die Position und daraus wird das GUI gebildet
             UI.PositionFromFEN(TheEngine.FromPositionCreateFEN(), playerColor);
             // Zusätzlich wird das Brett in der Konsole ausgegeben.
-            TheEngine.GetTheBoard();
+            //TheEngine.GetTheBoard();
+
+            // Die Farbe des Gegners in diesem Halbzug wird bestimmt.
+            PieceColor opponentColor = (turnColor == Chess_UI.PieceColor.White) ? Chess_UI.PieceColor.Black : Chess_UI.PieceColor.White;
 
             int gameStatus = TheEngine.CheckGameOver(TheEngine.FromPositionCreateFEN());
 
@@ -273,15 +243,14 @@ namespace Chess
                     gameOver = true;
                     ShowDialog("Remis durch Patt", "Ergebnis: 1/2 - 1/2");
                     break;
+                case 3:
+                    gameOver = true;
+                    ShowDialog("Remis durch 75-Zug-Regel", "Ergebnis: 1/2 - 1/2");
+                    break;
             }
-            if(TheEngine.MovesSinceBeaten() == 150)
-            {
-                gameOver = true;
-                ShowDialog("Remis durch 75-Zug-Regel", "Ergebnis: 1/2 - 1/2");
-
-            }
-
         }
+
+
         private void CheckIfAIShouldMove(object Sender, EventArgs e)
         {
             PieceColor turnColor = TheEngine.GetTurnColor();
@@ -292,6 +261,7 @@ namespace Chess
                 Move AIMove = AI.AlphaBetaRoot(TheEngine, 3);
 
                 bool pieceTaken = TheEngine.Board().Squares[AIMove.EndSquare.X, AIMove.EndSquare.Y].Color != PieceColor.Empty;
+                PieceType pieceType = TheEngine.Board().Squares[AIMove.StartSquare.X, AIMove.StartSquare.Y].Type;
 
                 TheEngine.MakeMove(AIMove.StartSquare.X, AIMove.StartSquare.Y, AIMove.EndSquare.X, AIMove.EndSquare.Y, MoveType.PromotionQueen);
 
@@ -316,14 +286,22 @@ namespace Chess
                     TheEngine.IncrementTurncounter();
                 }
 
+                // Check, ob Figur geschlagen, oder Bauer bewegt -> Halbzugzähler dementsprechend anpassen
+                if (pieceTaken || pieceType == PieceType.Pawn)
+                {
+                    TheEngine.Board().halfmoveClock = 1;
+                }
+                else
+                {
+                    TheEngine.Board().halfmoveClock++;
+                }
+
                 // Die Engine serialisiert die Position und daraus wird das GUI gebildet
                 UI.PositionFromFEN(TheEngine.FromPositionCreateFEN(), playerColor);
                 // Zusätzlich wird das Brett in der Konsole ausgegeben.
-                TheEngine.GetTheBoard();
+                //TheEngine.GetTheBoard();
 
                 int gameStatus = TheEngine.CheckGameOver(TheEngine.FromPositionCreateFEN());
-
-                Console.WriteLine(gameStatus);
 
                 switch (gameStatus)
                 {
@@ -339,8 +317,11 @@ namespace Chess
                         gameOver = true;
                         ShowDialog("Remis durch Patt", "Ergebnis: 1/2 - 1/2");
                         break;
+                    case 3:
+                        gameOver = true;
+                        ShowDialog("Remis durch 75-Zug-Regel", "Ergebnis: 1/2 - 1/2");
+                        break;
                 }
-
             }
         }
 

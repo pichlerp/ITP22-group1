@@ -8,19 +8,17 @@ namespace Chess_UI
 {
     class Perft
     {
-        Engine engine;
+        Engine engine = new Engine();
         int totalLeafNodes = 0;
 
-        public Perft(ref Engine in_engine)
-        {
-            engine = in_engine;
-        }
-        public void countMovesToDepth(int maxdepth)
+        public void countMovesToDepth(int maxdepth, string FEN)
         {
             if (maxdepth > 0)
             {
-                string initial_pos = engine.FromPositionCreateFEN();
 
+                string initial_pos = FEN;
+                engine.setBoardFromFEN(initial_pos);
+                Console.WriteLine("Position: " + FEN);
                 Console.WriteLine("Counting moves to depth: " + maxdepth);
 
                 // Divide: Die Anzahl der Blätter wird aufgeteilt auf den ersten Zug, der zu diesen Blättern geführt hat
@@ -109,7 +107,7 @@ namespace Chess_UI
 
             foreach (Move move in moves)
             {
-                
+
                 engine.setBoardFromFEN(initial_pos);
 
                 engine.MakeMove(move);

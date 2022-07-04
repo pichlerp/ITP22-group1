@@ -60,6 +60,7 @@
     <Compile Include="GameWindow.Designer.cs">
       <DependentUpon>GameWindow.cs</DependentUpon>
     </Compile>
+    <Compile Include="InGameMenu.cs" />
     <Compile Include="Move.cs" />
     <Compile Include="Perft.cs" />
     <Compile Include="Program.cs" />

@@ -12,7 +12,7 @@ namespace Chess_UI
     class ChessUI
     {
 
-        static int height = Screen.PrimaryScreen.Bounds.Height - 62 > 800 ? 800 : Screen.PrimaryScreen.Bounds.Height - 62;
+        static int height = Screen.PrimaryScreen.Bounds.Height - 200 > 800 ? 800 : Screen.PrimaryScreen.Bounds.Height - 200;
         static int width = height;
 
         static int findmiddlewidth = (Screen.PrimaryScreen.Bounds.Width - width) / 2;
@@ -36,7 +36,10 @@ namespace Chess_UI
         // Name der Bilder muss erster Großbuchstabe der englischen Figurenname + 'w' oder 'b' (black/white) sein, außer König hat 'G' als Buchstabe
         string projectDirectory = Directory.GetParent(Environment.CurrentDirectory).Parent.FullName;
 
-        public ChessUI(Form inputform, Action<int, int, bool> inputClickhandler)
+        Label[] files = new Label[8];
+        Label[] ranks = new Label[8];
+
+        public ChessUI(Form inputform, Action<int, int, bool> inputClickhandler, Chess_UI.PieceColor color)
         {
             // Variablen werden initialisiert
             form = inputform;
@@ -68,6 +71,73 @@ namespace Chess_UI
                 }
             }
             boardbox.Image = board;
+
+            // Reihen und Linien werden beschriftet, erfordert Unterscheidung, ob Brett von Weiß oder Schwarz aus betrachtet wird
+            if (color == Chess_UI.PieceColor.White)
+            {
+                // Betrachtung von Weiß: Beschriftung der Reihen von a aufsteigend (links nach rechts); Beschriftung der Zeilen von 8 absteigend (oben nach unten)
+                char file = 'a';
+                int rank = 8;
+                for (int i = 0; i < 8; i++)
+                {
+                    files[i] = new Label();
+                    form.Controls.Add(files[i]);
+                    files[i].Parent = form;
+                    files[i].Text = file.ToString();
+                    file++;
+                    files[i].Font = new Font("Candara Bold", 24, FontStyle.Regular);
+                    files[i].Size = new Size(50, 50);
+                    files[i].ForeColor = Color.FromArgb(223, 223, 223);
+                    files[i].AutoSize = false;
+                    files[i].TextAlign = ContentAlignment.MiddleCenter;
+                    files[i].Location = new Point(findmiddlewidth + width / 16 - 25 + i * width / 8, findmiddleheight + height);
+
+                    ranks[i] = new Label();
+                    form.Controls.Add(ranks[i]);
+                    ranks[i].Parent = form;
+                    ranks[i].Text = rank.ToString();
+                    rank--;
+                    ranks[i].Font = new Font("Candara Bold", 24, FontStyle.Regular);
+                    ranks[i].Size = new Size(50, 50);
+                    ranks[i].ForeColor = Color.FromArgb(223, 223, 223);
+                    ranks[i].AutoSize = false;
+                    ranks[i].TextAlign = ContentAlignment.MiddleCenter;
+                    ranks[i].Location = new Point(findmiddlewidth - width / 16, findmiddleheight + height / 16 - 25 + i * height / 8);
+                }
+            }
+            // Betrachtung von Schwarz: Beschriftung der Reihen von h absteigend (links nach rechts); Beschriftung der Zeilen von 1 aufsteigend (oben nach unten)
+            else if (color == Chess_UI.PieceColor.Black)
+            {
+                char file = 'h';
+                int rank = 1;
+                for (int i = 0; i < 8; i++)
+                {
+                    files[i] = new Label();
+                    form.Controls.Add(files[i]);
+                    files[i].Parent = form;
+                    files[i].Text = file.ToString();
+                    file--;
+                    files[i].Font = new Font("Candara Bold", 24, FontStyle.Regular);
+                    files[i].Size = new Size(50, 50);
+                    files[i].ForeColor = Color.FromArgb(223, 223, 223);
+                    files[i].AutoSize = false;
+                    files[i].TextAlign = ContentAlignment.MiddleCenter;
+                    files[i].Location = new Point(findmiddlewidth + width / 16 - 25 + i * width / 8, findmiddleheight + height);
+
+                    ranks[i] = new Label();
+                    form.Controls.Add(ranks[i]);
+                    ranks[i].Parent = form;
+                    ranks[i].Text = rank.ToString();
+                    rank++;
+                    ranks[i].Font = new Font("Candara Bold", 24, FontStyle.Regular);
+                    ranks[i].Size = new Size(50, 50);
+                    ranks[i].ForeColor = Color.FromArgb(223, 223, 223);
+                    ranks[i].AutoSize = false;
+                    ranks[i].TextAlign = ContentAlignment.MiddleCenter;
+                    ranks[i].Location = new Point(findmiddlewidth - width / 16, findmiddleheight + height / 16 - 25 + i * height / 8);
+                }
+            }
+
             // Pictureboxes der Figuren initialisieren
             for (int i = 0; i < 8; i++)
             {
@@ -86,6 +156,38 @@ namespace Chess_UI
                 }
             }
 
+        }
+
+        // Wenn ins Menü gewechselt wird, müssen die Beschriftungen entfernt werden
+        internal void HideRanksAndFiles()
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                this.form.Controls.Remove(files[i]);
+                this.form.Controls.Remove(ranks[i]);
+            }
+        }
+
+        public void Hide()
+        {
+            form.Controls.Remove(boardbox);
+            for (int i = 0; i < 8; i++)
+            {
+                for (int k = 0; k < 8; k++)
+                {
+                    form.Controls.Remove(piece_imageboxes[i, k]);
+                }
+            }
+        }
+
+        public Point getSize()
+        {
+            return new Point(width, height);
+        }
+
+        public Point getLocation()
+        {
+            return new Point(findmiddlewidth, findmiddleheight);
         }
 
         internal List<Point> TransformMovesBlack(List<Point> moves)
@@ -234,17 +336,20 @@ namespace Chess_UI
             PictureBox box = (PictureBox)sender;
             int pY = box.Location.Y / box.Size.Height;
             int pX = box.Location.X / box.Size.Width;
-            Console.WriteLine("Y: " + pY + "  X: " + pX);
             Debug.Assert(UIdebug.CheckCoords(pY, pX));
 
-            // Funktion wird abgebrochen wenn Leeres Feld angedrückt wird, ohne eine ausgewählte Figur, oder wenn selbes Feld 2 mal gedrückt wird
-            if (box.Image == null && piece_selected == false || (pX == currentClick.X && pY == currentClick.Y))
+            // Funktion wird abgebrochen wenn Leeres Feld angedrückt wird, ohne eine ausgewählte Figur
+            if (box.Image == null && piece_selected == false)
             {
                 piece_imageboxes[currentClick.Y, currentClick.X].BackColor = Color.Transparent;
                 HidePossibleMoves();
                 piece_selected = false;
                 return;
             }
+
+            // return wenn selbe figur 2 mal gedrückt
+            if (pX == currentClick.X && pY == currentClick.Y) return;
+
 
             // nächsten Zug speichern
             penultimateClick = lastClick;

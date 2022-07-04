@@ -8,106 +8,14 @@ namespace Chess_UI
 {
     class AI
     {
-        /*
-        const int maxdepth = 1;
-        Engine real_engine;
-        Engine imaginary_board;
-        ChessUI ui;
-        bool color;
-        Random random = new Random();
-
-        class Mabs // Move And Best Score
-        {
-            public Move move;
-            public int score = 0; // bestermöglicher score nach dem Zug
-            public Mabs(Move inmove)
-            {
-                move = inmove;
-            }
-        }
-
-        public AI(ref Engine in_engine, ref ChessUI in_ui, Chess_UI.PieceColor in_color)
-        {
-            real_engine = in_engine;
-            ui = in_ui;
-            color = in_color == PieceColor.White ? true : false;
-            real_engine.lockMoves();
-            imaginary_board = new Engine();
-        }
-
-        public void randomMove()
-        {
-            List<Move> ai_moves = real_engine.GenerateMoves();
-            if (ai_moves.Count == 0) return;
-            int rnd = random.Next() % ai_moves.Count;
-            real_engine.MakeMove(ai_moves[rnd]);
-            ui.NextMoveMade();
-        }
-
-        public void makeMove()
-        {
-            Mabs bestmabs = bestMabsToDepth(maxdepth);
-            real_engine.MakeMove(bestmabs.move);
-        }
-
-        Mabs bestMabsToDepth(int depth)
-        {
-            string state = imaginary_board.FromPositionCreateFEN();
-            List<Mabs> mabslist = moveListToMabsList(imaginary_board.GenerateMoves());
-
-            int maxindex = 0;
-            for (int i = 0; i < mabslist.Count; i++)
-            {
-                imaginary_board.setBoardFromFEN(state);
-                imaginary_board.MakeMove(mabslist[i].move);
-
-                if(depth == 0)
-                {
-                    int val = imaginary_board.Board().getScore();
-                    mabslist[i].score = (color == (imaginary_board.GetTurnColor() == PieceColor.White)) ? val : -val;
-                }
-                else
-                {
-                    mabslist[i].score = bestMabsToDepth(depth - 1).score;
-                }
-
-                if(mabslist[i].score > mabslist[maxindex].score)
-                {
-                    maxindex = i;
-                }
-            }
-
-            return mabslist[maxindex];
-        }
-
-        List<Mabs> moveListToMabsList(List<Move> moves)
-        {
-            List<Mabs> mabs = new List<Mabs>(moves.Count);
-            for(int i = 0; i < moves.Count; i++)
-            {
-                mabs.Add(new Mabs(moves[i]));
-            }
-            return mabs;
-        }
-
-        public int getScore()
-        {
-            return color ? imaginary_board.Board().getScore() : -imaginary_board.Board().getScore();
-        }
-        */
-
         static PieceColor AIcolor;
         static PieceColor opponentColor;
         static Engine engine1 = new Engine();
         static Engine engine2 = new Engine();
-        static int nodesCounter = 0;
         public AI(PieceColor color)
         {
             AIcolor = color;
-            /*
-            engineCopy.setBoardFromFEN(FEN);
-            engine.setBoardFromFEN(FEN);
-            */
+
             if (color == PieceColor.Black)
             {
                 opponentColor = PieceColor.White;
@@ -160,7 +68,6 @@ namespace Chess_UI
                     }
                 default:
                     {
-                        //Console.WriteLine("ERROR!");
                         return -1;
                     }
             }
@@ -174,7 +81,6 @@ namespace Chess_UI
             List<Move> moves = engine1.GenerateMoves();
             List<Move> pieceMoves = new List<Move>();
             MoveAndScore mas = new MoveAndScore();
-            //Console.WriteLine(FEN + " " + turnColor);
             engine1.setBoardFromFEN(FEN);
             for (int x = 0; x < 8; x++)
             {
@@ -232,41 +138,6 @@ namespace Chess_UI
             engine2.setBoardFromFEN(FEN);
             engine2.UpdateChecksAndGameOver(FEN);
 
-            /*
-            // Bleibt 0, bei Remis
-            if (engine2.Board().stalemate)
-            {
-                return 0;
-            }            
-
-            // Wenn Schwarz schachmatt ist ...
-            if (engine2.Board().blackLost)
-            {
-                if (engine2.GetTurnColor() == PieceColor.Black)
-                {
-                    // und Schwarz am Zug ist -> sehr kleiner Wert
-                    return 25000;
-                }
-                // und Weiß am Zug ist -> sehr großer Wert
-                return -25000;
-            }
-
-            // Wenn Weiß schachmatt ist ...
-            if (engine2.Board().whiteLost)
-            {
-                if (engine2.GetTurnColor() == PieceColor.Black)
-                {
-                    // und Schwarz am Zug ist -> sehr großer Wert
-                    return -25000;
-                }
-                // und Weiß am Zug ist->sehr kleiner Wert
-                return 25000;
-            }
-
-            */
-
-
-
             int score = 0;
 
             // Punkte für Schach
@@ -278,54 +149,6 @@ namespace Chess_UI
             {
                 score -= 75;
             }
-
-            /*
-            // Bonus für Rochade                            
-            if (engine1.Board().Squares[move.StartSquare.X, move.StartSquare.Y].Color != PieceColor.Empty && engine1.Board().Squares[move.StartSquare.X, move.StartSquare.Y].Type == PieceType.King)
-            {
-                if (move.StartSquare.X == 0 && move.StartSquare.X == 4 && engine1.Board().Squares[move.StartSquare.X, move.StartSquare.Y].Color == PieceColor.White)
-                {
-                    if (move.EndSquare.X == 0 && (move.EndSquare.Y == 6 || move.EndSquare.Y == 4))
-                    {
-                        mas.Score += 50;
-                    }
-                }
-                else if (move.StartSquare.X == 7 && move.StartSquare.X == 4 && engine1.Board().Squares[move.StartSquare.X, move.StartSquare.Y].Color == PieceColor.Black)
-                {
-                    if (move.EndSquare.X == 7 && (move.EndSquare.Y == 6 || move.EndSquare.Y == 4))
-                    {
-                        mas.Score += 50;
-                    }
-                }
-                else
-                {
-                    mas.Score -= 50;
-                }
-            }
-
-            // Zu Beginn der Partie Bonus für Bauernzüge in der Mitte, die aber nicht in der gegnerischen Hälfte des Bretts enden 
-            if (engine1.Board().Squares[move.StartSquare.X, move.StartSquare.Y].Type == PieceType.Pawn && engine1.Board().turnCounter < 5)
-            {
-                if (move.StartSquare.Y == 3 || move.StartSquare.Y == 4)
-                {
-                    mas.Score += 50;
-                }
-                if (engine1.Board().Squares[move.StartSquare.X, move.StartSquare.Y].Color == PieceColor.White)
-                {
-                    if (move.EndSquare.X > 3)
-                    {
-                        mas.Score -= 50;
-                    }
-                }
-                if (engine1.Board().Squares[move.StartSquare.X, move.StartSquare.Y].Color == PieceColor.Black)
-                {
-                    if (move.EndSquare.X < 4)
-                    {
-                        mas.Score -= 50;
-                    }
-                }
-            }
-            */
 
             Square square;
 
@@ -405,8 +228,6 @@ namespace Chess_UI
 
         private static int AlphaBeta(String FEN, int depth, int alpha, int beta)
         {
-            nodesCounter++;
-
             engine1.setBoardFromFEN(FEN);
 
             if (depth == 0)
@@ -463,12 +284,8 @@ namespace Chess_UI
             {
                 engine2.setBoardFromFEN(FEN);
                 engine2.MakeMove(mas.SrcMove.X, mas.SrcMove.Y, mas.DstMove.X, mas.DstMove.Y, MoveType.PromotionQueen);
-                //Console.WriteLine(engine2.Board().Squares[mas.SrcMove.X, mas.SrcMove.Y].Color);
-                //List<Move> moves = engineCopy.GenerateMoves();
-                //engine2.UpdateChecksAndGameOver();
                 fen = engine2.FromPositionCreateFEN();
                 value = -AlphaBeta(fen, depth - 1, -beta, -alpha);
-                //Console.WriteLine(value);
 
                 if (value >= beta)
                 {
@@ -480,13 +297,8 @@ namespace Chess_UI
                     alpha = value;
                 }
 
-                //Console.WriteLine(mas.SrcMove.X + " " + mas.SrcMove.Y + " " + mas.DstMove.X + " " + mas.DstMove.Y + " value: " + value + " alpha: " + alpha + " beta: " + alpha);
-
             }
-            // Console.WriteLine("alpha " + alpha);
-            //engineCopy.setBoardFromFEN(FEN);
             return alpha;
-
         }
 
         private struct FENAndLastMove
@@ -518,7 +330,6 @@ namespace Chess_UI
 
             List<Move> moves = engine1.GenerateMoves();
             List<Move> pieceMoves = new List<Move>();
-            //FENAndLastMove best = new FENAndLastMove("", new Move(0, 0, 0, 0), -10000000);
             engine1.setBoardFromFEN(theEngine.FromPositionCreateFEN());
 
             System.Drawing.Point start;
@@ -547,9 +358,9 @@ namespace Chess_UI
                             engine1.setBoardFromFEN(FEN);
                             engine2.setBoardFromFEN(FEN);
                             engine2.MakeMove(move);
-                            engine2.UpdateChecksAndGameOver(engine2.FromPositionCreateFEN());    
-                            
-                            if(AIcolor == PieceColor.White && engine2.Board().blackLost)
+                            engine2.UpdateChecksAndGameOver(engine2.FromPositionCreateFEN());
+
+                            if (AIcolor == PieceColor.White && engine2.Board().blackLost)
                             {
                                 return move;
                             }
@@ -573,40 +384,20 @@ namespace Chess_UI
             }
             resultList.Sort(SortFENAndLastMoveByScore);
 
-            //FENAndLastMove f = resultList.First();
-
-            //Console.WriteLine(f.LastMove.StartSquare.X + " " + f.LastMove.StartSquare.Y + " " + f.LastMove.EndSquare.X + " " + f.LastMove.EndSquare.Y + " " + f.Score);
-
-            /*
-            if (resultList.First().Score == 25000)
-            {
-                return new Move(resultList.First().LastMove.StartSquare.X, resultList.First().LastMove.StartSquare.Y, resultList.First().LastMove.EndSquare.X, resultList.First().LastMove.EndSquare.Y);
-            }
-            */
-
-
             depth--;
             int value;
             Move best = new Move(0, 0, 0, 0); ;
 
             foreach (FENAndLastMove falm in resultList)
             {
-                //engineCopy.setBoardFromFEN(falm.FEN);
                 value = -AlphaBeta(falm.FEN, depth, -beta, -alpha);
-                //Console.WriteLine(falm.FEN);
-                //Console.WriteLine("move: " + falm.LastMove.StartSquare.X + " " + +falm.LastMove.StartSquare.Y + " " + falm.LastMove.EndSquare.X + " " + +falm.LastMove.EndSquare.Y + " value: " + value + " alpha: " + alpha);
 
                 if (value > alpha)
                 {
                     alpha = value;
                     best = new Move(falm.LastMove.StartSquare.X, falm.LastMove.StartSquare.Y, falm.LastMove.EndSquare.X, falm.LastMove.EndSquare.Y);
-                    Console.WriteLine("best move: " + best.StartSquare.X + " " + best.StartSquare.Y + " value: " + alpha);
-
                 }
-
             }
-            //Console.WriteLine("Current board evaluation: " + best.Score);
-            Console.WriteLine("Nodes searched: " + nodesCounter);
             return best;
         }
 
