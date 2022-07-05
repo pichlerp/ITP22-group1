@@ -326,8 +326,8 @@ namespace Chess_UI
         public void NextMoveMade()
         {
             HidePossibleMoves();
-            piece_imageboxes[currentClick.Y, currentClick.X].BackColor = Color.LightGreen;
-            piece_imageboxes[lastClick.Y, lastClick.X].BackColor = Color.LightGreen;
+            piece_imageboxes[currentClick.Y, currentClick.X].BackColor = Color.FromArgb(230, 230, 100);
+            piece_imageboxes[lastClick.Y, lastClick.X].BackColor = Color.FromArgb(230, 230, 100);
         }
 
         public void ChessUI_Click(object sender, EventArgs e)
@@ -346,10 +346,6 @@ namespace Chess_UI
                 piece_selected = false;
                 return;
             }
-
-            // return wenn selbe figur 2 mal gedrückt
-            if (pX == currentClick.X && pY == currentClick.Y) return;
-
 
             // nächsten Zug speichern
             penultimateClick = lastClick;
@@ -372,6 +368,29 @@ namespace Chess_UI
             {
                 piece_selected = true;
                 box.BackColor = Color.FromArgb(230, 230, 100);
+            }
+        }
+
+        public void AiSelect(Point p)
+        {
+            penultimateClick = lastClick;
+            lastClick = currentClick;
+            currentClick = p;
+
+            clickHandler(p.Y, p.X, piece_selected);
+
+            if (piece_selected)
+            {
+                piece_imageboxes[currentClick.Y, currentClick.X].BackColor = Color.FromArgb(230, 230, 100);
+
+                piece_imageboxes[lastClick.Y, lastClick.X].BackColor = Color.Transparent;
+                piece_imageboxes[penultimateClick.Y, penultimateClick.X].BackColor = Color.Transparent;
+
+                piece_selected = false;
+            }
+            else
+            {
+                piece_selected = true;
             }
         }
 

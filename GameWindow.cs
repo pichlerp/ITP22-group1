@@ -277,6 +277,23 @@ namespace Chess
                 bool pieceTaken = TheEngine.Board().Squares[AIMove.EndSquare.X, AIMove.EndSquare.Y].Color != PieceColor.Empty;
                 PieceType pieceType = TheEngine.Board().Squares[AIMove.StartSquare.X, AIMove.StartSquare.Y].Type;
 
+                Point p = new Point(AIMove.StartSquare.X, AIMove.StartSquare.Y);
+
+                if (AIcolor == Chess_UI.PieceColor.White)
+                {
+                    int temp = p.Y;
+                    p.Y = p.X;
+                    p.X = 7 - temp;
+                }
+                else
+                {
+                    int temp = p.X;
+                    p.X = p.Y;
+                    p.Y = 7 - temp;
+                }
+                
+                UI.AiSelect(p);
+
                 TheEngine.MakeMove(AIMove.StartSquare.X, AIMove.StartSquare.Y, AIMove.EndSquare.X, AIMove.EndSquare.Y, MoveType.PromotionQueen);
 
                 if (TheEngine.KingInCheck(opponentColor, TheEngine.GenerateMoves(turnColor)))
@@ -336,6 +353,23 @@ namespace Chess
                         ShowDialog("Remis durch 75-Zug-Regel", "Ergebnis: 1/2 - 1/2");
                         break;
                 }
+
+                p = new Point(AIMove.EndSquare.X, AIMove.EndSquare.Y);
+
+                if (AIcolor == Chess_UI.PieceColor.White)
+                {
+                    int temp = p.Y;
+                    p.Y = p.X;
+                    p.X = 7 - temp;
+                }
+                else
+                {
+                    int temp = p.X;
+                    p.X = p.Y;
+                    p.Y = 7 - temp;
+                }
+
+                UI.AiSelect(p);
             }
         }
 

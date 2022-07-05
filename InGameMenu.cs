@@ -97,12 +97,22 @@ namespace Chess_UI
         {
             a = ia; b = ib; c = ic; d = id; pc = ie;
 
-            string color = engine.GetTurnColor() == PieceColor.White ? "w" : "b";
-            promotion_boxes[0].Image = Image.FromFile(projectDirectory + "/Images/Q" + color + ".png");
-            promotion_boxes[1].Image = Image.FromFile(projectDirectory + "/Images/K" + color + ".png");
-            promotion_boxes[2].Image = Image.FromFile(projectDirectory + "/Images/R" + color + ".png");
-            promotion_boxes[3].Image = Image.FromFile(projectDirectory + "/Images/B" + color + ".png");
-
+            PieceColor color = engine.GetTurnColor();
+            if(color == PieceColor.Black)
+            {
+                promotion_boxes[0].Image = Chess_UI.Properties.Resources.bq;
+                promotion_boxes[1].Image = Chess_UI.Properties.Resources.bn;
+                promotion_boxes[2].Image = Chess_UI.Properties.Resources.br;
+                promotion_boxes[3].Image = Chess_UI.Properties.Resources.bb;
+            }
+            else if(color == PieceColor.White)
+            {
+                promotion_boxes[0].Image = Chess_UI.Properties.Resources.wq;
+                promotion_boxes[1].Image = Chess_UI.Properties.Resources.wn;
+                promotion_boxes[2].Image = Chess_UI.Properties.Resources.wr;
+                promotion_boxes[3].Image = Chess_UI.Properties.Resources.wb;
+            }        
+           
             for (int i = 0; i < 4; i++)
             {
                 window.Controls.Add(promotion_boxes[i]);
